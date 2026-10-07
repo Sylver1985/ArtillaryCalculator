@@ -9,6 +9,9 @@ COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ["Artillery & Mortar Calculator.html", "/usr/share/nginx/html/index.html"]
 COPY privacy.html /usr/share/nginx/html/privacy.html
 
+# the logo and tab icons (deploy/make-icons.py builds them)
+COPY img/ /usr/share/nginx/html/img/
+
 # robots.txt, and ads.txt once AdSense is set up (see DEPLOY.md)
 COPY site/ /usr/share/nginx/html/
 

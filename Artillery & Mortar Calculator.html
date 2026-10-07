@@ -9,9 +9,15 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Wardogs FireGrid | L81 Mortar &amp; SPH-2 Artillery Calculator">
 <meta property="og:description" content="Free fire-control calculator for the Wardogs L81 mortar and SPH-2 artillery: grid coordinates in, bearing and mils out.">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://wardogsfiregrid.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wardogs FireGrid badge: an L81 mortar and an SPH-2 under a targeting grid">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1110">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230d1110%27/%3E%3Cpath d=%27M5 25 L14 13%27 stroke=%27%23f0b23c%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M7 25 Q16 1 27 25%27 fill=%27none%27 stroke=%27%237dd87d%27 stroke-width=%272%27 stroke-dasharray=%273 2%27/%3E%3C/svg%3E">
+<link rel="icon" href="img/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <style>
   :root {
     --bg:        #0d1110;
@@ -764,6 +770,9 @@
     -webkit-backdrop-filter: blur(3px);
   }
   .nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     margin-right: auto;
     padding: 4px 8px;
     font-size: 12px;
@@ -839,6 +848,9 @@
   .home-support p { margin: 0; flex: 1; }
   .home-support b { color: var(--text); }
   .home-support-btn { flex: 0 0 auto; padding: 8px 16px; color: var(--amber); }
+  .nav-mark { width: 30px; height: 30px; margin: -6px 0; }   /* no taller than the tabs */
+  .home-head { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .home-logo { width: 170px; height: auto; filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7)); }
   .home-head h1 { font-size: 26px; letter-spacing: 6px; margin-bottom: 6px; }
   .home-head p { font-size: 12px; line-height: 1.6; }
   .home-fine { order: 5; margin: 0; font-size: 10.5px; color: #4b5a52; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95); }
@@ -1065,6 +1077,7 @@
       gap: 14px;
     }
     .home-head, .home-support, .home .lf-strip, .home-fine { grid-column: 1 / -1; }
+    .home-head { flex-direction: row; gap: 24px; }
     .support-dlg { zoom: var(--fit, 1); }     /* it sits outside .app, so scale it to match */
     .col {
       display: flex;
@@ -1096,7 +1109,7 @@
   <!-- One file, three pages: the tool chooser (/), the L81 (/l81) and the
        SPH-2 (/sph2). Opened as a file, #l81 / #sph2 pick the page instead. -->
   <nav class="topnav" aria-label="Pages">
-    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs FireGrid</a>
+    <a class="nav-brand nav-link" data-page="home" href="./"><img class="nav-mark" src="img/firegrid-mark-96.webp" alt="" width="30" height="30" onerror="this.remove()">Wardogs FireGrid</a>
     <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
     <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
     <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
@@ -1105,9 +1118,15 @@
   <!-- the tool chooser -->
   <section class="home" id="homeView" hidden>
     <header class="home-head">
-      <h1>Wardogs FireGrid</h1>
-      <p>Artillery &amp; mortar fire control for the Wardogs L81 mortar and SPH-2: map grid
-        coordinates in, bearing and mils out.</p>
+      <img class="home-logo" src="img/firegrid-logo-320.webp"
+           srcset="img/firegrid-logo-320.webp 320w, img/firegrid-logo-640.webp 640w" sizes="240px"
+           width="170" height="170" onerror="this.remove()"
+           alt="Wardogs FireGrid: L81 mortar and SPH-2 artillery strike coordination calculator">
+      <div>
+        <h1>Wardogs FireGrid</h1>
+        <p>Artillery &amp; mortar fire control for the Wardogs L81 mortar and SPH-2: map grid
+          coordinates in, bearing and mils out.</p>
+      </div>
     </header>
     <a class="tool-card nav-link" data-page="l81" href="l81">
       <span class="tool-k">Mortar</span>

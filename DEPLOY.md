@@ -15,7 +15,7 @@ account. The donate link, ad spaces and AdSense are in [SITE.md](SITE.md).
 | File | Purpose |
 |---|---|
 | `fly.toml` | App settings: name, region (`syd`), machine size, auto-stop, health check. |
-| `Dockerfile` | Builds the nginx image from the page, `privacy.html` and `site/`. |
+| `Dockerfile` | Builds the nginx image from the page, `privacy.html`, `img/` and `site/`. |
 | `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, `www.` to bare domain redirect, gzip, security headers, `/healthz`. |
 | `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes, once it has a token (step 6). |
 

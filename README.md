@@ -18,9 +18,10 @@ high arc), from map coordinates.
 
 ## Use
 
-Open `Artillery & Mortar Calculator.html` in a browser. It's one
-self-contained file with nothing to install; the L81 and SPH-2 tabs switch
-pages (`#l81`, `#sph2` when opened from disk).
+Open `Artillery & Mortar Calculator.html` in a browser; nothing to install.
+The calculator is self-contained; keep the `img/` folder beside it for the
+logo. The L81 and SPH-2 tabs switch pages (`#l81`, `#sph2` when opened from
+disk).
 
 ## Host it
 
@@ -35,6 +36,7 @@ pages (`#l81`, `#sph2` when opened from disk).
 |---|---|
 | `Artillery & Mortar Calculator.html` | The whole site in one file: tool chooser, L81 page and SPH-2 page. Served as `index.html`. |
 | `privacy.html` | Privacy page, linked from the calculator. |
+| `img/` | Logo, tab icons and the link-preview image, built by `deploy/make-icons.py` from `design/firegrid-logo.webp`. |
 | `site/` | Extra files served next to the page: `robots.txt`, and later `ads.txt` and sponsor images. |
 | `deploy/htaccess` | Server settings for Hostinger (Apache/LiteSpeed), installed as `.htaccess`. |
 | `deploy/build-site.sh` | Builds the files for upload: `dist/site/` and `dist/wardogs-site.zip`. |

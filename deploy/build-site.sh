@@ -14,6 +14,7 @@ mkdir -p "$out"
 cp "Artillery & Mortar Calculator.html" "$out/index.html"
 cp privacy.html "$out/privacy.html"
 cp deploy/htaccess "$out/.htaccess"
+cp -R img "$out/img"
 # robots.txt, and ads.txt and sponsor images once you add them
 cp -R site/. "$out/"
 

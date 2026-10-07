@@ -21,6 +21,8 @@ AddDefaultCharset UTF-8
     RewriteCond %{REQUEST_URI} ^(.*/)privacy$
     RewriteRule ^ %1privacy.html [R=301,L]
 
+    RewriteRule ^favicon\.ico$ img/favicon.ico [L]
+
     # the tool pages are the same file; its script reads the address
     RewriteRule ^(?:l81|sph2)$ index.html [L]
 </IfModule>

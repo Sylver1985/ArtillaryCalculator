@@ -119,6 +119,20 @@ AdSense ads are shown at their real 300×250 size regardless of the page's
 fit-to-screen scaling, as ad-network rules require. A space a page doesn't show
 (the second one on the SPH-2 page) never requests an ad.
 
+## Logo and icons
+
+The master logo is `design/firegrid-logo.webp`. `deploy/make-icons.py` turns it
+into everything in `img/`: the home-page badge, the top-bar mark, the tab
+icons (`favicon.ico`, plus PNGs for Android and iPhone home screens) and
+`og-image.jpg`, the picture Discord, Reddit and Steam show when someone
+shares a link. To change the logo, replace the master and run:
+
+```
+python3 deploy/make-icons.py
+```
+
+(It needs Pillow: `pip install pillow`.) Then commit `img/` and deploy.
+
 ## Getting found on Google
 
 `site/sitemap.xml` lists the three pages and `site/robots.txt` points search

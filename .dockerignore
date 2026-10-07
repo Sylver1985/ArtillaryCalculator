@@ -1,4 +1,4 @@
-# only the page, privacy.html, site/ and deploy/nginx.conf go into the image
+# only the page, privacy.html, img/, site/ and deploy/nginx.conf go into the image
 .git
 .github
 .claude
@@ -8,4 +8,6 @@ Dockerfile
 deploy/*.example
 deploy/htaccess
 deploy/build-site.sh
+deploy/make-icons.py
+design
 dist
