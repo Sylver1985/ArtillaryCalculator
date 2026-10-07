@@ -1,0 +1,71 @@
+# Builds the site as plain files (deploy/build-site.sh) whenever main
+# changes, for hosting such as Hostinger: HOSTINGER.md.
+# - Every run keeps the files as a download, "wardogs-site", on the run's
+#   page in the Actions tab.
+# - If the SITE_BRANCH repository variable names a branch, the files are also
+#   published to it, for hosts that deploy a Git branch as-is (Hostinger's
+#   Git integration). HOSTINGER.md, "Automatic updates".
+name: Build site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: build-site
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: sh deploy/build-site.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wardogs-site
+          path: dist/site/
+          include-hidden-files: true   # .htaccess
+          retention-days: 90
+
+      - name: Publish to the site branch
+        if: vars.SITE_BRANCH != ''
+        env:
+          BRANCH: ${{ vars.SITE_BRANCH }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REMOTE: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+        run: |
+          set -eu
+          # the branch is replaced with the built files on every run
+          case "$BRANCH" in
+            main|master|"$DEFAULT_BRANCH")
+              echo "::error::SITE_BRANCH is '$BRANCH'. It must name a branch of its own, such as hostinger."
+              exit 1 ;;
+          esac
+
+          mkdir publish && cd publish
+          git init -q
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "$REMOTE"
+          # build on the branch's history so the host can keep pulling it
+          if git fetch -q --depth 1 origin "$BRANCH" 2>/dev/null; then
+            git checkout -q -b "$BRANCH" FETCH_HEAD
+          else
+            git checkout -q --orphan "$BRANCH"
+          fi
+          git rm -rqf --ignore-unmatch .
+          cp -R ../dist/site/. .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "The site hasn't changed; nothing to publish."
+            exit 0
+          fi
+          git commit -q -m "Site built from ${GITHUB_SHA:0:7}"
+          git push -q origin "$BRANCH"
+          echo "Published to $BRANCH."

@@ -22,9 +22,22 @@ pages (`#l81`, `#sph2` when opened from disk).
 
 ## Host it
 
-See [DEPLOY.md](DEPLOY.md) for launching it on Fly.io, adding your own domain,
-automatic deploys from `main`, the donate link, and selling or filling the ad
-spaces.
+- **Hostinger** or similar web hosting: [HOSTINGER.md](HOSTINGER.md). Upload
+  four files; optional automatic updates from GitHub.
+- **Fly.io**: [DEPLOY.md](DEPLOY.md). A small nginx container.
+- Donate link, ad spaces, sponsors and AdSense, on either host:
+  [SITE.md](SITE.md).
+
+| File | Purpose |
+|---|---|
+| `Artillery & Mortar Calculator.html` | The whole site in one file: tool chooser, L81 page and SPH-2 page. Served as `index.html`. |
+| `privacy.html` | Privacy page, linked from the calculator. |
+| `site/` | Extra files served next to the page: `robots.txt`, and later `ads.txt` and sponsor images. |
+| `deploy/htaccess` | Server settings for Hostinger (Apache/LiteSpeed), installed as `.htaccess`. |
+| `deploy/build-site.sh` | Builds the files for upload: `dist/site/` and `dist/wardogs-site.zip`. |
+| `.github/workflows/build-site.yml` | On each change to `main`: builds that zip as a download, and optionally publishes it to a branch for Hostinger to deploy. |
+| `deploy/nginx.conf`, `Dockerfile`, `fly.toml`, `.github/workflows/fly-deploy.yml` | Fly.io hosting. |
+| `deploy/ads.txt.example` | Template for AdSense's `ads.txt`. |
 
 ## Credits
 

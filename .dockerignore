@@ -6,3 +6,6 @@
 fly.toml
 Dockerfile
 deploy/*.example
+deploy/htaccess
+deploy/build-site.sh
+dist

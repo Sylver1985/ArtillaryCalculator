@@ -1087,15 +1087,15 @@
   <!-- One file, three pages: the tool chooser (/), the L81 (/l81) and the
        SPH-2 (/sph2). Opened as a file, #l81 / #sph2 pick the page instead. -->
   <nav class="topnav" aria-label="Pages">
-    <a class="nav-brand nav-link" data-page="home" href="/">Wardogs Artillery</a>
-    <a class="nav-tab nav-link" data-page="l81" href="/l81">L81 Mortar</a>
-    <a class="nav-tab nav-link" data-page="sph2" href="/sph2">SPH-2</a>
+    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs Artillery</a>
+    <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
+    <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
     <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
   </nav>
 
   <!-- the tool chooser -->
   <section class="home" id="homeView" hidden>
-    <a class="tool-card nav-link" data-page="l81" href="/l81">
+    <a class="tool-card nav-link" data-page="l81" href="l81">
       <span class="tool-k">Mortar</span>
       <span class="tool-name">L81 Mortar</span>
       <span class="tool-range">132&ndash;684 m</span>
@@ -1103,7 +1103,7 @@
         round from where the last one landed.</span>
       <span class="tool-go">Open the L81 calculator &rarr;</span>
     </a>
-    <a class="tool-card nav-link" data-page="sph2" href="/sph2">
+    <a class="tool-card nav-link" data-page="sph2" href="sph2">
       <span class="tool-k">Self-propelled gun</span>
       <span class="tool-name">SPH-2</span>
       <span class="tool-range">low arc 1,181&ndash;2,629 m &middot; high arc 780&ndash;2,629 m</span>
@@ -1615,13 +1615,15 @@
 
   // ---- pages ------------------------------------------------------------
   //
-  // One file, three pages. On the server the address picks the page (/l81,
-  // /sph2, anything else is the tool chooser); opened as a file, the #hash
+  // One file, three pages. On the server the last part of the address picks
+  // the page (…/l81, …/sph2, anything else is the tool chooser), so the site
+  // works at a domain's root or in a folder; opened as a file, the #hash
   // does, and changing it reloads into the new page.
   var IS_FILE = location.protocol === "file:",
       PAGE = (function () {
-        var p = (IS_FILE ? location.hash.slice(1) : location.pathname)
-                  .replace(/^\/+|\/+$/g, "").replace(/\.html$/, "");
+        var p = IS_FILE ? location.hash.slice(1)
+                        : location.pathname.replace(/\/+$/, "").split("/").pop();
+        p = p.replace(/\.html$/, "");
         return p === "l81" || p === "sph2" ? p : "home";
       })();
   if (IS_FILE) window.addEventListener("hashchange", function () { location.reload(); });
@@ -2566,10 +2568,11 @@
     document.title = info.title;
     document.getElementById("pageTitle").textContent = info.h1;
 
-    // tabs: real addresses on the server, #hash when opened as a file
+    // tabs: real addresses on the server (relative, so a site in a folder
+    // stays in it), #hash when opened as a file
     [].forEach.call(document.querySelectorAll(".nav-link"), function (a) {
       var p = a.getAttribute("data-page"), path = p === "home" ? "" : p;
-      a.href = IS_FILE ? "#" + path : "/" + path;
+      a.href = IS_FILE ? "#" + path : path || "./";
       if (a.classList.contains("nav-tab") && p === PAGE) a.setAttribute("aria-current", "page");
     });
 
