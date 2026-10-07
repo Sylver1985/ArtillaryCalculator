@@ -97,7 +97,7 @@
   .readout, .visuals, .working, .adj { order: 2; }
   .cb, .ad-slot { order: 3; }
   .home .ad-slot { order: 0; }        /* on the chooser it sits beside the tool cards */
-  .actions, .lf-strip, .hint { order: 4; }
+  .actions, .lf-strip, .hint, .ad-slot.banner { order: 4; }   /* a banner follows the buttons */
 
   header {
     text-align: center;
@@ -660,6 +660,8 @@
   /* ---------- ad space and LobbyForge ---------- */
 
   .ad-slot {
+    --ad-w: 300px;            /* the creative's size; banners set their own */
+    --ad-h: 250px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -674,7 +676,7 @@
     margin-bottom: 6px;
   }
   .ad-fill {
-    min-height: 250px;
+    min-height: var(--ad-h);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -682,7 +684,7 @@
   /* A network ad keeps its real 300x250 whatever the page's fit-to-screen
      zoom: scaling someone else's ad is both ugly and against ad-network
      rules, so the zoom is undone here and the space sized to match. */
-  .ad-slot.net .ad-fill { min-height: calc(250px / var(--fit, 1)); }
+  .ad-slot.net .ad-fill { min-height: calc(var(--ad-h) / var(--fit, 1)); }
   .ad-host { zoom: calc(1 / var(--fit, 1)); }
 
   /* LobbyForge: Discord blurple, so it reads as a different product */
@@ -752,7 +754,40 @@
 
   /* a paid sponsor's own 300x250 creative */
   .sponsor-link { display: block; line-height: 0; }
-  .sponsor-link img { display: block; width: 300px; height: 250px; max-width: 100%; object-fit: contain; }
+  .sponsor-link img { display: block; width: var(--ad-w); height: var(--ad-h); max-width: 100%; object-fit: contain; }
+
+  /* banner spaces in the left column: no panel, so the banner gets the room */
+  .ad-slot.banner { background: none; border: 0; padding: 0; }
+  .ad-slot.banner .ad-label { margin-bottom: 3px; font-size: 8.5px; line-height: 9px; text-align: center; }
+  .ad-slot[data-size="320x100"] { --ad-w: 320px; --ad-h: 100px; }
+  .ad-slot[data-size="320x50"]  { --ad-w: 320px; --ad-h: 50px; }
+  .app:not(.page-l81) [data-slot="left-l81"],
+  .app:not(.page-sph2) [data-slot="left-sph2"] { display: none; }
+  .lf-banner, .adv-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 12px;
+    width: var(--ad-w);
+    max-width: 100%;
+    height: var(--ad-h);
+    padding: 4px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+  }
+  .lf-banner {
+    border: 1px solid #3c4170;
+    background: linear-gradient(160deg, rgba(88, 101, 242, 0.22), rgba(21, 27, 25, 0.6) 70%);
+  }
+  .lf-banner:hover { border-color: #5865f2; }
+  .lf-banner .lf-logo { height: 18px; }
+  .lf-banner-copy { font-size: 11px; color: #e6e8ff; }
+  .adv-banner { flex-direction: column; flex-wrap: nowrap; border: 1px dashed #3c4a44; background: rgba(21, 27, 25, 0.55); }
+  .adv-banner:hover { border-color: var(--accent-dk); }
+  .adv-banner .adv-head { font-size: 14px; }
+  .adv-banner .adv-copy { font-size: 10.5px; line-height: 1.3; }
 
   /* ---------- pages: top bar, tool chooser ---------- */
 
@@ -1231,9 +1266,15 @@
       <button id="clearAll">Clear all</button>
     </div>
 
-    <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
-      <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
-    </a>
+    <!-- banner spaces: each tool page has its own, sized to the room it has -->
+    <aside class="ad-slot banner" data-slot="left-l81" data-size="320x100" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
+    <aside class="ad-slot banner" data-slot="left-sph2" data-size="320x50" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
 
     <div class="hint">
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
@@ -1476,6 +1517,20 @@
     <span class="adv-copy">Put your server, clan, stream or product in front of Wardogs
       gunners while they line up their shots.</span>
     <span class="adv-cta">Get in touch &rarr;</span>
+  </a>
+</template>
+
+<template id="tplLobbyForgeBanner">
+  <a class="lf-banner lf-link" href="https://lobbyforge.net/" data-utm="banner" target="_blank" rel="noopener">
+    <img class="lf-logo" src="https://lobbyforge.net/lf_name_banner.png" alt="LobbyForge"
+         onerror="this.replaceWith(Object.assign(document.createElement('span'), {className: 'lf-brand', textContent: 'LobbyForge'}))">
+    <span class="lf-banner-copy">The Discord LFG bot you design yourself &rarr;</span>
+  </a>
+</template>
+<template id="tplAdvertiseBanner">
+  <a class="adv-banner" href="#" target="_blank" rel="noopener">
+    <span class="adv-head">Advertise here</span>
+    <span class="adv-copy"><span class="adv-size"></span> banner &middot; get in touch &rarr;</span>
   </a>
 </template>
 
@@ -2566,11 +2621,14 @@
     adsenseClient: "",                     // publisher ID, "ca-pub-0000000000000000"
 
     // A booked sponsor for a space looks like
-    //   sponsor: { image: "https://…/ad-300x250.png", url: "https://…", alt: "Who it is" }
+    //   sponsor: { image: "sponsors/acme-300x250.png", url: "https://…", alt: "Who it is" }
+    // and the image must be the space's size.
     slots: {
-      "side-1": { adsenseSlot: "", sponsor: null },   // right column, both tool pages
-      "side-2": { adsenseSlot: "", sponsor: null },   // right column, L81 page only
-      "home-1": { adsenseSlot: "", sponsor: null }    // the tool chooser
+      "side-1":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, both tool pages
+      "side-2":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, L81 page
+      "left-l81":  { adsenseSlot: "", sponsor: null },   // 320x100, left column, L81 page
+      "left-sph2": { adsenseSlot: "", sponsor: null },   // 320x50,  left column, SPH-2 page
+      "home-1":    { adsenseSlot: "", sponsor: null }    // 300x250, the tool chooser
     },
 
     // where "Advertise here" sends people
@@ -2637,11 +2695,14 @@
       document.head.appendChild(js);
     }
 
-    [].forEach.call(document.querySelectorAll(".ad-slot"), function (slot) {
-      // only spaces this page shows: an ad must never be requested hidden
-      if (slot.offsetParent === null) return;
+    // only spaces this page shows: an ad must never be requested hidden
+    var spaces = [].filter.call(document.querySelectorAll(".ad-slot"), function (slot) {
+      return slot.offsetParent !== null;
+    }), unsold = [];
 
+    spaces.forEach(function (slot) {
       var sc    = cfg.slots[slot.getAttribute("data-slot")] || {},
+          size  = (slot.getAttribute("data-size") || "300x250").split("x"),
           fill  = slot.querySelector(".ad-fill"),
           label = slot.querySelector(".ad-label"),
           sp    = sc.sponsor;
@@ -2655,38 +2716,46 @@
         link.rel = "sponsored noopener";
         img.src = sp.image;
         img.alt = sp.alt || "Sponsor";
-        img.width = 300;
-        img.height = 250;
+        img.width = +size[0];
+        img.height = +size[1];
         link.appendChild(img);
         fill.appendChild(link);
         label.textContent = "Sponsored";
       } else if (cfg.adsenseClient && sc.adsenseSlot) {   // AdSense
         var ins = document.createElement("ins");
         ins.className = "adsbygoogle ad-host";
-        ins.style.cssText = "display:inline-block;width:300px;height:250px";
+        ins.style.cssText = "display:inline-block;width:" + size[0] + "px;height:" + size[1] + "px";
         ins.setAttribute("data-ad-client", cfg.adsenseClient);
         ins.setAttribute("data-ad-slot", sc.adsenseSlot);
         fill.appendChild(ins);
         slot.classList.add("net");
         label.textContent = "Advertisement";
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } else if (!lfShown) {                              // LobbyForge, once
-        fill.appendChild(document.getElementById("tplLobbyForge").content.cloneNode(true));
+      } else {
+        unsold.push(slot);
+      }
+    });
+
+    // LobbyForge takes one unsold space, a 300x250 one if there is one
+    var lf = unsold.filter(function (s) { return !s.classList.contains("banner"); })[0] || unsold[0];
+    unsold.forEach(function (slot) {
+      var banner = slot.classList.contains("banner"),
+          fill   = slot.querySelector(".ad-fill"),
+          label  = slot.querySelector(".ad-label");
+      if (slot === lf) {
+        fill.appendChild(document.getElementById(banner ? "tplLobbyForgeBanner" : "tplLobbyForge").content.cloneNode(true));
         label.textContent = "Sponsored";
-        lfShown = true;
-      } else {                                            // for sale
-        fill.appendChild(document.getElementById("tplAdvertise").content.cloneNode(true));
-        fill.querySelector(".adv-card").href = cfg.advertiseUrl;
+      } else {
+        fill.appendChild(document.getElementById(banner ? "tplAdvertiseBanner" : "tplAdvertise").content.cloneNode(true));
+        fill.querySelector("a").href = cfg.advertiseUrl;
+        if (banner) fill.querySelector(".adv-size").textContent = slot.getAttribute("data-size").replace("x", "×");
         label.textContent = "Ad space";
       }
     });
 
-    // if every space is taken, LobbyForge keeps its one-line strip instead
-    if (!lfShown) {
-      [].forEach.call(document.querySelectorAll(".lf-strip"), function (st) {
-        if (!!st.closest(".home") === (PAGE === "home")) st.hidden = false;
-      });
-    }
+    // on the chooser, if every space is sold, LobbyForge keeps a one-line
+    // strip; a tool page has no room left for one
+    if (!lf && PAGE === "home") document.querySelector(".home .lf-strip").hidden = false;
 
     [].forEach.call(document.querySelectorAll(".lf-link"), function (a) {
       a.href = cfg.lobbyforgeUrl +

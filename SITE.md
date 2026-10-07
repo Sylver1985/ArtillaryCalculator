@@ -28,9 +28,11 @@ var SITE_CONFIG = {
   donateUrl: "",                 // your PayPal link for the Support button
   adsenseClient: "",             // AdSense publisher ID, "ca-pub-…"
   slots: {
-    "side-1": { adsenseSlot: "", sponsor: null },   // right column, both tool pages
-    "side-2": { adsenseSlot: "", sponsor: null },   // right column, L81 page only
-    "home-1": { adsenseSlot: "", sponsor: null }    // the tool chooser
+    "side-1":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, both tool pages
+    "side-2":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, L81 page
+    "left-l81":  { adsenseSlot: "", sponsor: null },   // 320x100, left column, L81 page
+    "left-sph2": { adsenseSlot: "", sponsor: null },   // 320x50,  left column, SPH-2 page
+    "home-1":    { adsenseSlot: "", sponsor: null }    // 300x250, the tool chooser
   },
   advertiseUrl:  "mailto:support@lobbyforge.net?subject=…",
   lobbyforgeUrl: "https://lobbyforge.net/",
@@ -60,19 +62,35 @@ Put the link in `donateUrl`.
 
 ## Ad spaces
 
-Every space is a standard 300×250. Each fills in this order:
+| Space | Size | Where |
+|---|---|---|
+| `side-1` | 300×250 | Right column, L81 **and** SPH-2 pages (the most seen) |
+| `side-2` | 300×250 | Right column, L81 page |
+| `left-l81` | 320×100 | Left column under the buttons, L81 page |
+| `left-sph2` | 320×50 | Left column under the buttons, SPH-2 page |
+| `home-1` | 300×250 | Tool chooser (home page) |
+
+All are standard ad sizes, so both sponsors and AdSense can fill them. Each
+space fills in this order:
 
 1. **A paid sponsor** booked for that space (see below).
 2. **AdSense**, if `adsenseClient` and that space's `adsenseSlot` are both set.
-3. **LobbyForge**, for the first unfilled space on the page. After that:
+3. **LobbyForge**, once per page, in the first unsold 300×250 space, or a
+   banner space if those are all sold. Every other unsold space shows
    **"Advertise here"**, linking to `advertiseUrl`.
 
-LobbyForge always appears exactly once per page: when paid ads fill every space,
-it moves to a one-line strip.
+When every space on a page is sold, LobbyForge steps aside on the tool pages
+(there's no room left) and becomes a one-line strip on the home page.
+
+The banners were sized to the room the left column has on every desktop screen,
+so the pages still fit without scrolling. With AdSense switched on, a window
+smaller than 1280×720 can scroll slightly: Google's ads must stay full size
+while the page shrinks to fit.
 
 ### Selling a space to a sponsor
 
-Ask for a **300×250 image** (PNG, JPG or GIF) and the link it should open. Host
+Ask for an image **exactly the space's size** (300×250, 320×100 or 320×50; PNG,
+JPG or GIF, ideally under 150 KB) and the link it should open. Host
 the image with the site: put it in the repo's `site/sponsors/` folder, and it
 is published next to the page as `sponsors/acme.png` (on Hostinger you can
 also upload it to a `sponsors` folder with the File Manager). Then book the
@@ -81,6 +99,8 @@ space:
 ```js
 "side-1": { adsenseSlot: "", sponsor: { image: "sponsors/acme.png", url: "https://acme.example/", alt: "Acme" } },
 ```
+
+Set `sponsor` back to `null` when the booking ends.
 
 An image on the sponsor's own site works too: give its full `https://`
 address. Sponsor links are marked `rel="sponsored"`, which Google requires for
@@ -103,11 +123,11 @@ support email by default. Point it at a page or form if you have one.
    ads.txt only from a main domain, never a subdomain, so if the site ever
    moves to a subdomain, the file has to go on the main domain instead.)
 4. Ask AdSense to review the site. Approval can take days to a few weeks.
-5. Once approved, create a **Display ad** unit, size **Fixed, 300 × 250**, for
-   each space you want AdSense in, and put each unit's `data-ad-slot` number in
-   that space's `adsenseSlot`. One unit per space gives you per-space reports;
-   reusing one number everywhere also works. A booked sponsor still takes
-   priority over AdSense in its space.
+5. Once approved, create a **Display ad** unit with a **Fixed size** matching
+   each space you want AdSense in (300 × 250, 320 × 100 or 320 × 50), and put
+   each unit's `data-ad-slot` number in that space's `adsenseSlot`. One unit
+   per space gives you per-space reports; spaces of the same size can share
+   one. A booked sponsor still takes priority over AdSense in its space.
 6. **Leave Auto ads off** for this site. Google would insert extra ads wherever
    it likes, pushing the one-screen layout off the screen.
 7. **Consent for European visitors:** in AdSense, **Privacy & messaging →
