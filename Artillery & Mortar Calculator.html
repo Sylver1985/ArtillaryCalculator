@@ -216,9 +216,10 @@
     color: var(--accent);
     background: #1f2a25;
   }
-  /* Simple: flat-ground answers from the table alone, so the height and
-     tilt inputs go (the tilt panel is hidden from script) */
-  .app.simple .asl-field, .app.simple .adv-only { display: none; }
+  /* Simple: flat-ground answers from the table alone, so the height inputs
+     and counter-battery go, and the tilt panel is hidden from script —
+     which leaves the tools column empty, so it goes too */
+  .app.simple .asl-field, .app.simple .adv-only, .app.simple .col-tools { display: none; }
   .app.simple .fields { grid-template-columns: 1fr 1fr; }
 
   /* ---------- readout ---------- */
@@ -749,6 +750,11 @@
       gap: 14px;
       min-height: calc((100vh - 28px) / var(--fit, 1));
     }
+    /* Simple drops the tools column: the other two keep their widths */
+    .app.simple {
+      max-width: 1000px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    }
     .col {
       display: flex;
       flex-direction: column;
@@ -999,7 +1005,7 @@
       </div>
     </div>
 
-    <div class="cb" id="cbPanel">
+    <div class="cb adv-only" id="cbPanel">
       <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
         <span>Counter-battery &mdash; locate enemy gun</span><span class="chev">&#9662;</span>
       </button>
