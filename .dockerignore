@@ -1,4 +1,4 @@
-# only the page, privacy.html, img/, site/ and deploy/nginx.conf go into the image
+# only the page, privacy.html, guide.html, img/, site/ and deploy/nginx.conf go into the image
 .git
 .github
 .claude

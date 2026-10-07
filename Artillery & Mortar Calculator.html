@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wardogs FireGrid | L81 Mortar &amp; SPH-2 Artillery Calculator</title>
-<meta name="description" content="Free Wardogs artillery calculator for the L81 mortar and SPH-2: map grid coordinates in, bearing and mils out, with height, tilt and impact corrections.">
+<title>Wardogs FireGrid: Artillery &amp; Mortar Calculator (L81, SPH-2)</title>
+<meta name="description" content="Free Wardogs artillery and mortar calculator for the L81 and SPH-2: map coordinates in, bearing and mils out, with height, tilt and impact corrections.">
 <meta property="og:site_name" content="Wardogs FireGrid">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Wardogs FireGrid | L81 Mortar &amp; SPH-2 Artillery Calculator">
+<meta property="og:title" content="Wardogs FireGrid: Artillery &amp; Mortar Calculator (L81, SPH-2)">
 <meta property="og:description" content="Free fire-control calculator for the Wardogs L81 mortar and SPH-2 artillery: grid coordinates in, bearing and mils out.">
 <meta property="og:image" content="https://wardogsfiregrid.com/img/og-image.jpg">
 <meta property="og:image:width" content="1200">
@@ -18,6 +18,33 @@
 <link rel="icon" href="img/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Wardogs FireGrid",
+      "url": "https://wardogsfiregrid.com/"
+    },
+    {
+      "@type": "WebApplication",
+      "name": "Wardogs FireGrid",
+      "alternateName": ["Wardogs artillery calculator", "Wardogs mortar calculator"],
+      "url": "https://wardogsfiregrid.com/",
+      "description": "Free artillery and mortar calculator for WARDOGS: firing solutions for the L81 mortar and SPH-2 self-propelled howitzer from map coordinates, with height, platform-tilt and adjust-from-impact corrections.",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any (web browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "image": "https://wardogsfiregrid.com/img/og-image.jpg",
+      "about": { "@type": "VideoGame", "name": "WARDOGS" },
+      "featureList": ["L81 mortar calculator", "SPH-2 low and high arc calculator", "Bearing and mils from map coordinates", "Target height (ASL) correction", "Gun platform tilt correction", "Adjust fire from impact"]
+    }
+  ]
+}
+</script>
 <style>
   :root {
     --bg:        #0d1110;
@@ -888,6 +915,8 @@
   .home-logo { width: 170px; height: auto; filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7)); }
   .home-head h1 { font-size: 26px; letter-spacing: 6px; margin-bottom: 6px; }
   .home-head p { font-size: 12px; line-height: 1.6; }
+  .home-head p a { color: var(--accent); }
+  .h1-sub { display: block; margin-top: 4px; font-size: 13px; letter-spacing: 4px; color: var(--amber); }
   .home-fine { order: 5; margin: 0; font-size: 10.5px; color: #4b5a52; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95); }
   .home-fine a { color: var(--dim); }
 
@@ -1147,6 +1176,7 @@
     <a class="nav-brand nav-link" data-page="home" href="./"><img class="nav-mark" src="img/firegrid-mark-96.webp" alt="" width="30" height="30" onerror="this.remove()">Wardogs FireGrid</a>
     <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
     <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
+    <a class="nav-tab nav-guide" href="guide">Guide</a>
     <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
   </nav>
 
@@ -1158,9 +1188,9 @@
            width="170" height="170" onerror="this.remove()"
            alt="Wardogs FireGrid: L81 mortar and SPH-2 artillery strike coordination calculator">
       <div>
-        <h1>Wardogs FireGrid</h1>
-        <p>Artillery &amp; mortar fire control for the Wardogs L81 mortar and SPH-2: map grid
-          coordinates in, bearing and mils out.</p>
+        <h1>Wardogs FireGrid <span class="h1-sub">Artillery &amp; mortar calculator</span></h1>
+        <p>Firing solutions for the Wardogs L81 mortar and SPH-2: map coordinates in, bearing
+          and mils out. New here? <a class="nav-guide" href="guide">How to use FireGrid &rarr;</a></p>
       </div>
     </header>
     <a class="tool-card nav-link" data-page="l81" href="l81">
@@ -2614,6 +2644,9 @@
   // own just loads the AdSense script so Google can verify the site.
   // DEPLOY.md walks through all of it.
   var SITE_CONFIG = {
+    // the site's address, for search engines' canonical links
+    siteUrl: "https://wardogsfiregrid.com",
+
     // the Support button's PayPal link: a paypal.me link, or the link from
     // a PayPal Donate button. Blank shows "Donations open here soon".
     donateUrl: "https://paypal.me/cryptointelligence",
@@ -2638,16 +2671,16 @@
   };
 
   var PAGE_INFO = {
-    home: { title: "Wardogs FireGrid | L81 Mortar & SPH-2 Artillery Calculator",
-            h1: "Wardogs FireGrid" },
-    l81:  { title: "L81 Mortar Calculator for Wardogs | Wardogs FireGrid",
-            h1: "L81 Mortar Calculator", weapons: ["mortar"],
-            desc: "Wardogs L81 mortar calculator: range, bearing and mils from map grid " +
+    home: { title: "Wardogs FireGrid: Artillery & Mortar Calculator (L81, SPH-2)",
+            h1: "Wardogs FireGrid", path: "/" },
+    l81:  { title: "Wardogs L81 Mortar Calculator: Range, Bearing & Mils | FireGrid",
+            h1: "L81 Mortar Calculator", weapons: ["mortar"], path: "/l81",
+            desc: "Wardogs L81 mortar calculator: range, bearing and mils from map " +
                   "coordinates, then adjust each round from where the last one landed." },
-    sph2: { title: "SPH-2 Artillery Calculator for Wardogs | Wardogs FireGrid",
-            h1: "SPH-2 Calculator", weapons: ["spgLow", "spgHigh"],
-            desc: "Wardogs SPH-2 artillery calculator, low and high arc: bearing and mils " +
-                  "from grid coordinates, corrected for target height, gun tilt and impacts." }
+    sph2: { title: "Wardogs SPH-2 Artillery Calculator (Low & High Arc) | FireGrid",
+            h1: "SPH-2 Artillery Calculator", weapons: ["spgLow", "spgHigh"], path: "/sph2",
+            desc: "Wardogs SPH-2 artillery calculator for low and high arc: bearing and " +
+                  "mils from map coordinates, corrected for target height, gun tilt and impacts." }
   };
 
   (function setUpPage() {
@@ -2657,6 +2690,23 @@
     document.title = info.title;
     document.getElementById("pageTitle").textContent = info.h1;
     if (info.desc) document.querySelector('meta[name="description"]').content = info.desc;
+    document.querySelector('meta[property="og:title"]').content = info.title;
+
+    // one address per page for search engines, whichever host name served it
+    // (wardogsfiregrid.com, www., or the fly.dev address)
+    if (!IS_FILE && SITE_CONFIG.siteUrl) {
+      var canon = document.createElement("link");
+      canon.rel = "canonical";
+      canon.href = SITE_CONFIG.siteUrl + info.path;
+      document.head.appendChild(canon);
+      var ogUrl = document.createElement("meta");
+      ogUrl.setAttribute("property", "og:url");
+      ogUrl.content = canon.href;
+      document.head.appendChild(ogUrl);
+    }
+    [].forEach.call(document.querySelectorAll(".nav-guide"), function (a) {
+      a.href = IS_FILE ? "guide.html" : "guide";
+    });
 
     // tabs: real addresses on the server (relative, so a site in a folder
     // stays in it), #hash when opened as a file

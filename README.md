@@ -12,7 +12,8 @@ high arc), from map coordinates.
   - **adjust from impact**: log where a round landed and the next round is
     corrected from it
 - Fits on one screen from a 1366×768 laptop to 4K, and works on phones.
-- A page for each gun, `/l81` and `/sph2`, with a tool chooser at `/`.
+- A page for each gun, `/l81` and `/sph2`, a tool chooser at `/`, and a
+  how-to guide at `/guide`.
 - Free to use: ad spaces for sponsors or AdSense, and a **Support** tab for
   PayPal donations towards hosting.
 
@@ -35,9 +36,10 @@ disk).
 | File | Purpose |
 |---|---|
 | `Artillery & Mortar Calculator.html` | The whole site in one file: tool chooser, L81 page and SPH-2 page. Served as `index.html`. |
+| `guide.html` | How to use FireGrid, served at `/guide`. |
 | `privacy.html` | Privacy page, linked from the calculator. |
 | `img/` | Logo, tab icons and the link-preview image, built by `deploy/make-icons.py` from `design/firegrid-logo.webp`. |
-| `site/` | Extra files served next to the page: `robots.txt`, and later `ads.txt` and sponsor images. |
+| `site/` | Extra files served next to the page: `robots.txt`, `sitemap.xml`, the IndexNow key, and later `ads.txt` and sponsor images. |
 | `deploy/htaccess` | Server settings for Hostinger (Apache/LiteSpeed), installed as `.htaccess`. |
 | `deploy/build-site.sh` | Builds the files for upload: `dist/site/` and `dist/wardogs-site.zip`. |
 | `.github/workflows/build-site.yml` | On each change to `main`: builds that zip as a download, and optionally publishes it to a branch for Hostinger to deploy. |

@@ -15,13 +15,19 @@ AddDefaultCharset UTF-8
     RewriteRule (^|/)\.(?!well-known/) - [F]
 
     # …/l81/ -> …/l81, so the page's relative links resolve from the folder
-    RewriteCond %{REQUEST_URI} ^(.*/(?:l81|sph2))/$
+    RewriteCond %{REQUEST_URI} ^(.*/(?:l81|sph2|guide))/$
     RewriteRule ^ %1 [R=301,L]
 
     RewriteCond %{REQUEST_URI} ^(.*/)privacy$
     RewriteRule ^ %1privacy.html [R=301,L]
 
     RewriteRule ^favicon\.ico$ img/favicon.ico [L]
+
+    # the guide is guide.html, at a clean address (THE_REQUEST: only what the
+    # visitor asked for, so the rewrite below doesn't loop back here)
+    RewriteCond %{THE_REQUEST} \s(/(?:.*/)?)guide\.html[\s?]
+    RewriteRule ^ %1guide [R=301,L]
+    RewriteRule ^guide$ guide.html [L]
 
     # the tool pages are the same file; its script reads the address
     RewriteRule ^(?:l81|sph2)$ index.html [L]

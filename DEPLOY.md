@@ -142,6 +142,12 @@ repository secret**. Name `FLY_API_TOKEN`, paste the token, **Add secret**.
 To test it: **Actions → Deploy to Fly.io → Run workflow**. It should finish
 green within a couple of minutes.
 
+### 7. Get it on Google and Bing
+
+As soon as `https://wardogsfiregrid.com` loads, work through
+[SITE.md, "Getting found on Google and Bing"](SITE.md#getting-found-on-google-and-bing):
+Search Console, the sitemap, **Request indexing** for each page, and Bing.
+
 ## Day to day
 
 ```

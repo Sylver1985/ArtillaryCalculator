@@ -8,6 +8,7 @@ COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 # the page keeps its readable name in the repo; on the web it is the site root
 COPY ["Artillery & Mortar Calculator.html", "/usr/share/nginx/html/index.html"]
 COPY privacy.html /usr/share/nginx/html/privacy.html
+COPY guide.html /usr/share/nginx/html/guide.html
 
 # the logo and tab icons (deploy/make-icons.py builds them)
 COPY img/ /usr/share/nginx/html/img/

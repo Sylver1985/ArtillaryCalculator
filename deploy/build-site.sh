@@ -13,6 +13,7 @@ mkdir -p "$out"
 # the page keeps its readable name in the repo; on the web it is the index
 cp "Artillery & Mortar Calculator.html" "$out/index.html"
 cp privacy.html "$out/privacy.html"
+cp guide.html "$out/guide.html"
 cp deploy/htaccess "$out/.htaccess"
 cp -R img "$out/img"
 # robots.txt, and ads.txt and sponsor images once you add them

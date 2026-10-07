@@ -8,8 +8,9 @@ These work the same wherever the site is hosted. It runs on Fly.io at
 | Address | Page |
 |---|---|
 | `/` | Tool chooser: the two calculators, an ad space and the support banner |
-| `/l81` | L81 mortar calculator (two ad spaces, as the mortar has no tilt panel) |
-| `/sph2` | SPH-2 calculator with the low/high arc choice (one ad space) |
+| `/l81` | L81 mortar calculator |
+| `/sph2` | SPH-2 calculator with the low/high arc choice |
+| `/guide` | How to use FireGrid (`guide.html`) |
 
 All three are the same file, `index.html` on the server. The server sends
 `/l81` and `/sph2` to it (`.htaccess` on Hostinger, `nginx.conf` on Fly.io)
@@ -153,20 +154,55 @@ python3 deploy/make-icons.py
 
 (It needs Pillow: `pip install pillow`.) Then commit `img/` and deploy.
 
-## Getting found on Google
+## Getting found on Google and Bing
 
-`site/sitemap.xml` lists the three pages and `site/robots.txt` points search
-engines at it. To get indexed sooner and see what people search for:
+### Already in place
 
-1. Go to <https://search.google.com/search-console>, **Add property →
-   Domain**, and enter `wardogsfiregrid.com`.
-2. It gives you a `TXT` record. Add it in Hostinger's DNS (**Domains →
-   wardogsfiregrid.com → DNS / Nameservers**), then click **Verify**. It can
-   take a few minutes for the record to be seen.
-3. **Sitemaps** → submit `https://wardogsfiregrid.com/sitemap.xml`.
+- **Titles and descriptions** on every page built around what players search
+  for: *Wardogs artillery calculator*, *Wardogs mortar calculator*, *L81 mortar*,
+  *SPH-2 artillery*, *mils*, *bearing*. (The old `<meta name="keywords">` tag is
+  ignored by Google and Bing, so the words go in titles, headings and text
+  instead.)
+- **The guide**, `/guide` (`guide.html`): about 1,500 words on using
+  FireGrid, which gives search engines (and AdSense's reviewers) real
+  content to rank and approve.
+- **`site/sitemap.xml`** listing all five pages, and **`site/robots.txt`**
+  allowing everything and pointing at the sitemap.
+- **Structured data**: the calculator is described as a free web app for
+  WARDOGS, the guide as an article with an FAQ.
+- **Canonical addresses**, so only `wardogsfiregrid.com/…` is indexed, never
+  `www.` or the `fly.dev` address.
+- **IndexNow**: every deploy from GitHub tells Bing (and through it DuckDuckGo
+  and Yahoo, plus Yandex and others) that the pages changed. The key file is
+  `site/92178755fb1399f77e4b3d27edccee6c.txt`.
 
-Links from where players are (Discord servers, Reddit, Steam guides) do more
-for ranking than anything on the page itself.
+### Do these as soon as https://wardogsfiregrid.com loads
+
+1. **Google Search Console**, <https://search.google.com/search-console>:
+   **Add property → Domain**, enter `wardogsfiregrid.com`, and copy the `TXT`
+   record it gives you. In hPanel, **Domains → wardogsfiregrid.com → DNS /
+   Nameservers**, add it (Type `TXT`, Name `@`, the value it gave you), then
+   click **Verify**. The record can take a few minutes to be seen.
+2. **Sitemaps** (left menu): submit `https://wardogsfiregrid.com/sitemap.xml`.
+3. **URL inspection** (search bar at the top): enter each of these and click
+   **Request indexing**:
+   - `https://wardogsfiregrid.com/`
+   - `https://wardogsfiregrid.com/l81`
+   - `https://wardogsfiregrid.com/sph2`
+   - `https://wardogsfiregrid.com/guide`
+
+   This is the quickest way into Google; new pages usually show up within a
+   few days.
+4. **Bing Webmaster Tools**, <https://www.bing.com/webmasters>: sign in and
+   choose **Import from Google Search Console**. It copies the site and
+   sitemap across in one step.
+5. **Links from players** do more for ranking than anything on the page:
+   post FireGrid where Wardogs players are (Discord servers, Reddit, Steam
+   community guides), ideally with words like "Wardogs artillery calculator"
+   in or near the link.
+
+When you change a page substantially, update its `<lastmod>` date in
+`site/sitemap.xml`.
 
 ## LobbyForge
 
