@@ -14,7 +14,7 @@ account. The donate link, ad spaces and AdSense are in [SITE.md](SITE.md).
 
 | File | Purpose |
 |---|---|
-| `fly.toml` | App settings: name, region (`syd`), machine size, auto-stop, health check. |
+| `fly.toml` | App settings: name, region (`iad`), machine size, auto-stop, health check. |
 | `Dockerfile` | Builds the nginx image from the page, `privacy.html`, `img/` and `site/`. |
 | `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, `www.` to bare domain redirect, gzip, security headers, `/healthz`. |
 | `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes, once it has a token (step 6). |
@@ -45,26 +45,28 @@ fly auth whoami
   then open a new PowerShell window.
 - Not logged in: `fly auth login`.
 
-### 3. Create the app in its own organisation
+### 3. Create the app
 
-A Fly organisation has its own bill and members. Giving the calculator one
-keeps its costs and access separate from anything else on your Fly account:
+Fly bills per **organisation**, and your account's existing one already has your
+payment card, so create the app there. It's still its own app with its own
+machines; only the bill is shared.
 
 ```
-fly orgs create wardogs-firegrid
 fly orgs list
-fly apps create wardogs-firegrid --org wardogs-firegrid
+fly apps create wardogs-firegrid --org personal
 ```
 
-`fly orgs list` shows the new organisation's slug; if it isn't exactly
-`wardogs-firegrid` (say the name was taken), use the slug it shows after
-`--org`. The new organisation is billed on its own; if Fly asks for a payment
-card for it, add one on the Fly dashboard under the organisation's **Billing**. (To use
-an organisation you already have instead, skip `orgs create` and give
-`--org` that one's name; `fly orgs list` shows them. It's still its own app
-and machines either way.)
+`personal` is your account's own organisation; if `fly orgs list` shows the
+one you want under another name, use that. If the name is taken, see
+[Troubleshooting](#troubleshooting).
 
-If the app name is taken, see [Troubleshooting](#troubleshooting).
+**Want a separate bill?** Run `fly orgs create wardogs-firegrid`, add a payment
+card at <https://fly.io/dashboard/wardogs-firegrid/billing> (Fly refuses to
+create apps in a new organisation until it has one: "We need your payment
+information to continue"), then use `--org wardogs-firegrid` above.
+
+Run the commands in this guide one at a time and check each succeeds before
+the next: a failed step makes the rest fail too.
 
 ### 4. Deploy
 
@@ -73,9 +75,12 @@ fly deploy -a wardogs-firegrid
 ```
 
 This uploads the folder, builds the image on Fly's builders and starts it in
-Sydney; the first time takes a minute or two. Fly makes **two machines**: one
-serves the site and the other is a stopped spare that only starts in a real
-rush (it costs cents a month while stopped).
+Ashburn, Virginia (`iad`), beside LobbyForge; the first time takes a minute or
+two. Fly makes **two machines**, on different physical servers: one serves
+the site, and the other is a stopped spare that only starts if the first goes
+down or more than 200 requests arrive at once. A stopped machine costs only its
+storage, under a cent a month, so the backup is nearly free. To run just one:
+`fly scale count 1 -a wardogs-firegrid`.
 
 Check `https://wardogs-firegrid.fly.dev` opens, then the L81 and SPH-2 tabs.
 
@@ -161,18 +166,35 @@ folder.
 
 ## Cost
 
-Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
-and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. A new
-organisation has no free allowance. Current prices:
-<https://fly.io/docs/about/pricing/>.
+Roughly **US$3–5 a month at 50,000 visits a week**: about $2.20 for the
+machine and $1–3 for bandwidth. Traffic mostly affects the bandwidth part. Current
+prices: <https://fly.io/docs/about/pricing/>.
 
 - The machine **stops when nobody is using it** and starts on the next visit,
   so that first visitor waits about a second. To keep it always on, set
   `min_machines_running = 1` in `fly.toml` and deploy.
-- **Region:** `syd` costs about a quarter more than Fly's cheapest regions. If
-  most players turn out to be in the US or Europe, a region there (e.g. `iad`
-  or `lhr`) is cheaper and faster for them: change `primary_region` in
-  `fly.toml` and deploy (`fly platform regions` lists them).
+- **Region:** `iad` (Ashburn, Virginia) is Fly's cheapest region and close to
+  most US and European players. The page is one small download, so players
+  further away barely notice. To move it, see "Moving to another region"
+  below.
+
+## Moving to another region
+
+`primary_region` in `fly.toml` decides where new machines start, but
+existing machines stay where they are. To move them, e.g. from Sydney to
+Ashburn: set `primary_region`, then
+
+```
+fly deploy -a wardogs-firegrid
+fly scale count 2 --region iad -a wardogs-firegrid
+fly scale count 0 --region syd -a wardogs-firegrid
+fly status -a wardogs-firegrid
+```
+
+The first `scale` starts the new machines (2: the running one and its spare;
+use 1 if you've scaled down to one), the second removes the old ones, and
+`fly status` should list only the new region. The site stays up
+throughout, and its addresses and certificates don't change.
 
 ## AdSense: ads.txt
 
