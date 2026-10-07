@@ -1,13 +1,14 @@
-# Launching the calculator on Fly.io
+# Launching Wardogs FireGrid on Fly.io
 
-The calculator becomes its own Fly app, **`wardogs-artillery`**, alongside
-the LobbyForge app that already serves `lobbyforge.net`, and lives at
-**`https://artillery.lobbyforge.net`**. The server is nginx in a small Docker
-image; Fly builds it for you, so you don't need Docker on your computer.
+**Wardogs FireGrid** runs as its own Fly app, **`wardogs-firegrid`**, on its own
+machines and its own domain, **`wardogsfiregrid.com`**. It shares nothing with
+LobbyForge's servers. The
+server is nginx in a small Docker image; Fly builds it for you, so you don't
+need Docker on your computer.
 
-Every command below names the app with `-a wardogs-artillery`, so none of them
-can touch LobbyForge by mistake. The donate link, ad spaces and AdSense are in
-[SITE.md](SITE.md).
+Every command names the app with
+`-a wardogs-firegrid`, so none of them can act on another app in your Fly
+account. The donate link, ad spaces and AdSense are in [SITE.md](SITE.md).
 
 ## The Fly.io files
 
@@ -15,7 +16,7 @@ can touch LobbyForge by mistake. The donate link, ad spaces and AdSense are in
 |---|---|
 | `fly.toml` | App settings: name, region (`syd`), machine size, auto-stop, health check. |
 | `Dockerfile` | Builds the nginx image from the page, `privacy.html` and `site/`. |
-| `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, gzip, security headers, `/healthz`. |
+| `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, `www.` to bare domain redirect, gzip, security headers, `/healthz`. |
 | `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes, once it has a token (step 6). |
 
 ## Launch
@@ -35,8 +36,6 @@ right-click in it → **Open in Terminal**.
 
 ### 2. Check flyctl and your login
 
-You already run LobbyForge on Fly, so these probably just work:
-
 ```
 fly version
 fly auth whoami
@@ -46,20 +45,31 @@ fly auth whoami
   then open a new PowerShell window.
 - Not logged in: `fly auth login`.
 
-### 3. Create the app
+### 3. Create the app in its own organisation
+
+A Fly organisation has its own bill and members. Giving the calculator one
+keeps its costs and access separate from anything else on your Fly account:
 
 ```
-fly apps create wardogs-artillery
+fly orgs create wardogs-firegrid
+fly orgs list
+fly apps create wardogs-firegrid --org wardogs-firegrid
 ```
 
-If you're in more than one Fly organisation it asks which; pick the one
-LobbyForge is in (`fly orgs list` shows them). If the name is taken, see
-[Troubleshooting](#troubleshooting).
+`fly orgs list` shows the new organisation's slug; if it isn't exactly
+`wardogs-firegrid` (say the name was taken), use the slug it shows after
+`--org`. The new organisation is billed on its own; if Fly asks for a payment
+card for it, add one on the Fly dashboard under the organisation's **Billing**. (To use
+an organisation you already have instead, skip `orgs create` and give
+`--org` that one's name; `fly orgs list` shows them. It's still its own app
+and machines either way.)
+
+If the app name is taken, see [Troubleshooting](#troubleshooting).
 
 ### 4. Deploy
 
 ```
-fly deploy -a wardogs-artillery
+fly deploy -a wardogs-firegrid
 ```
 
 This uploads the folder, builds the image on Fly's builders and starts it in
@@ -67,43 +77,62 @@ Sydney; the first time takes a minute or two. Fly makes **two machines**: one
 serves the site and the other is a stopped spare that only starts in a real
 rush (it costs cents a month while stopped).
 
-Check `https://wardogs-artillery.fly.dev` opens, then the L81 and SPH-2 tabs.
+Check `https://wardogs-firegrid.fly.dev` opens, then the L81 and SPH-2 tabs.
 
-### 5. Put it on artillery.lobbyforge.net
+### 5. Put it on your domain
 
-Ask Fly for a certificate:
+Ask Fly for certificates for the domain and its `www.`, then list the app's
+addresses:
 
 ```
-fly certs add artillery.lobbyforge.net -a wardogs-artillery
+fly certs add wardogsfiregrid.com -a wardogs-firegrid
+fly certs add www.wardogsfiregrid.com -a wardogs-firegrid
+fly ips list -a wardogs-firegrid
 ```
 
-`lobbyforge.net`'s DNS is at Hostinger, so add the record there: hPanel →
-**Domains** → `lobbyforge.net` → **DNS / Nameservers** → DNS records → add:
+`fly ips list` shows a `v4` address (shared) and a `v6` address.
+
+The domain's DNS is at Hostinger. In hPanel: **Domains** → `wardogsfiregrid.com`
+→ **DNS / Nameservers** → DNS records. Right now it holds Hostinger's parking
+records, which point the domain at a Hostinger holding page:
+
+- **Delete** the `A` record for `@` (it points at `2.57.91.91`).
+- **Edit** the `CNAME` record for `www` (it points at `wardogsfiregrid.com`) to
+  point at `wardogs-firegrid.fly.dev` instead.
+- Leave any `MX`, `TXT` or other records alone; they're for email and
+  verification.
+
+Then add the two records for the bare domain, so the full set is:
 
 | Type | Name | Target (Points to) | TTL |
 |---|---|---|---|
-| `CNAME` | `artillery` | `wardogs-artillery.fly.dev` | leave the default |
+| `A` | `@` | the `v4` address from `fly ips list` | leave the default |
+| `AAAA` | `@` | the `v6` address from `fly ips list` | leave the default |
+| `CNAME` | `www` | `wardogs-firegrid.fly.dev` | leave the default |
 
-Leave the existing `lobbyforge.net` and `www` records alone; they point at
-LobbyForge. If `fly certs add` also mentions an `_acme-challenge` record, it's
-optional with the CNAME in place.
+(`fly certs setup wardogsfiregrid.com -a wardogs-firegrid` prints the same
+records if you want to double-check. An `_acme-challenge` record it may
+mention is optional.)
 
-Then check, and repeat every few minutes until the certificate shows as issued:
+Then check both, and repeat every few minutes until each certificate shows as
+issued:
 
 ```
-fly certs check artillery.lobbyforge.net -a wardogs-artillery
+fly certs check wardogsfiregrid.com -a wardogs-firegrid
+fly certs check www.wardogsfiregrid.com -a wardogs-firegrid
 ```
 
-Usually that's within minutes of the DNS record going live (DNS can take up
-to a few hours). Then open `https://artillery.lobbyforge.net`, `/l81` and
-`/sph2`.
+Usually that's within minutes of the DNS records going live (DNS can take up
+to a few hours). Then open `https://wardogsfiregrid.com`, `/l81` and `/sph2`.
+`www.wardogsfiregrid.com` redirects to the bare domain, so search engines see
+one site.
 
 ### 6. Turn on automatic deploys
 
 After this, merging into `main` puts the change live; no more `fly deploy`.
 
 ```
-fly tokens create deploy -a wardogs-artillery
+fly tokens create deploy -a wardogs-firegrid
 ```
 
 Copy the whole token it prints, including the `FlyV1 ` at the start. On
@@ -116,20 +145,19 @@ green within a couple of minutes.
 ## Day to day
 
 ```
-fly status -a wardogs-artillery     # machines and health check
-fly logs -a wardogs-artillery       # live nginx log
+fly status -a wardogs-firegrid     # machines and health check
+fly logs -a wardogs-firegrid       # live nginx log
 ```
 
 To deploy by hand (no GitHub token, or a change you haven't pushed): pull or
-download the latest repo, then `fly deploy -a wardogs-artillery` from its
+download the latest repo, then `fly deploy -a wardogs-firegrid` from its
 folder.
 
 ## Cost
 
 Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
-and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. If your Fly
-organisation is on one of the older plans (from before October 2024), its free
-allowances may cover much of this. Current prices:
+and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. A new
+organisation has no free allowance. Current prices:
 <https://fly.io/docs/about/pricing/>.
 
 - The machine **stops when nobody is using it** and starts on the next visit,
@@ -142,34 +170,34 @@ allowances may cover much of this. Current prices:
 
 ## AdSense: ads.txt
 
-Google reads `ads.txt` only from the main domain, so it has to come from
-`https://lobbyforge.net/ads.txt`, which the **LobbyForge** app serves
-(currently a 404), not this one. When you set up AdSense, add the file to
-LobbyForge's site. Details: [SITE.md, "Setting up AdSense"](SITE.md#setting-up-adsense).
+With the site on its own domain, `ads.txt` lives in this repo: copy
+`deploy/ads.txt.example` to `site/ads.txt`, put your publisher number in place
+of the zeros, and deploy. It's then at `https://wardogsfiregrid.com/ads.txt`.
+The rest of the AdSense setup: [SITE.md, "Setting up AdSense"](SITE.md#setting-up-adsense).
 
 ## Trying the server locally (optional)
 
 With Docker installed:
 ```
-docker build -t wardogs-artillery .
-docker run --rm -p 8080:8080 wardogs-artillery
+docker build -t wardogs-firegrid .
+docker run --rm -p 8080:8080 wardogs-firegrid
 ```
 Then open <http://localhost:8080>. You can also just open the HTML file
 directly; the calculator itself needs no server.
 
 ## Troubleshooting
 
-- **"Name has already been taken"** at step 3: pick another name (e.g.
-  `wardogs-artillery-lf`), put it in `fly.toml` (`app = "…"`), and use it in
-  place of `wardogs-artillery` in every command, including the CNAME target.
-- **`certs check` says the DNS isn't set up**: check the CNAME's name is just
-  `artillery` and its target is `wardogs-artillery.fly.dev`. If you'd created
-  `artillery.lobbyforge.net` as a website or subdomain in hPanel earlier,
-  remove it; its own `A` record for `artillery` would clash with the CNAME.
-- **Deploy hangs on health checks**: `fly logs -a wardogs-artillery` shows
+- **"Name has already been taken"** at step 3: pick another app name (e.g.
+  `wardogsfiregrid`), put it in `fly.toml` (`app = "…"`), and use it in
+  place of `wardogs-firegrid` in every command, including the `www` CNAME
+  target.
+- **`certs check` says the DNS isn't set up**: compare the records with
+  `fly ips list -a wardogs-firegrid`, and make sure the parking `A` record
+  (`2.57.91.91`) is gone from Hostinger's DNS.
+- **Deploy hangs on health checks**: `fly logs -a wardogs-firegrid` shows
   nginx's error. The check is `GET /healthz` on port 8080.
 - **Changes not showing**: the page is served with `Cache-Control: no-cache`,
-  so a normal reload picks up a new deploy. `fly status -a wardogs-artillery`
+  so a normal reload picks up a new deploy. `fly status -a wardogs-firegrid`
   shows which version is running.
 - **The GitHub deploy fails with an auth error**: the `FLY_API_TOKEN` secret
   is missing part of the token. Create a new one (step 6) and paste all of it.

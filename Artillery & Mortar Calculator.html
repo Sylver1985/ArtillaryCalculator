@@ -3,8 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wardogs Artillery &amp; Mortar Calculator</title>
-<meta name="description" content="Range, bearing and mils for the Wardogs L81 mortar and SPH-2, with target-height and platform-tilt correction and adjust-from-impact.">
+<title>Wardogs FireGrid | L81 Mortar &amp; SPH-2 Artillery Calculator</title>
+<meta name="description" content="Free Wardogs artillery calculator for the L81 mortar and SPH-2: map grid coordinates in, bearing and mils out, with height, tilt and impact corrections.">
+<meta property="og:site_name" content="Wardogs FireGrid">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Wardogs FireGrid | L81 Mortar &amp; SPH-2 Artillery Calculator">
+<meta property="og:description" content="Free fire-control calculator for the Wardogs L81 mortar and SPH-2 artillery: grid coordinates in, bearing and mils out.">
+<meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#0d1110">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230d1110%27/%3E%3Cpath d=%27M5 25 L14 13%27 stroke=%27%23f0b23c%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M7 25 Q16 1 27 25%27 fill=%27none%27 stroke=%27%237dd87d%27 stroke-width=%272%27 stroke-dasharray=%273 2%27/%3E%3C/svg%3E">
 <style>
@@ -834,6 +839,10 @@
   .home-support p { margin: 0; flex: 1; }
   .home-support b { color: var(--text); }
   .home-support-btn { flex: 0 0 auto; padding: 8px 16px; color: var(--amber); }
+  .home-head h1 { font-size: 26px; letter-spacing: 6px; margin-bottom: 6px; }
+  .home-head p { font-size: 12px; line-height: 1.6; }
+  .home-fine { order: 5; margin: 0; font-size: 10.5px; color: #4b5a52; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95); }
+  .home-fine a { color: var(--dim); }
 
   /* ---------- support (donations) ---------- */
 
@@ -1055,7 +1064,7 @@
       align-content: start;
       gap: 14px;
     }
-    .home-support, .home .lf-strip { grid-column: 1 / -1; }
+    .home-head, .home-support, .home .lf-strip, .home-fine { grid-column: 1 / -1; }
     .support-dlg { zoom: var(--fit, 1); }     /* it sits outside .app, so scale it to match */
     .col {
       display: flex;
@@ -1087,7 +1096,7 @@
   <!-- One file, three pages: the tool chooser (/), the L81 (/l81) and the
        SPH-2 (/sph2). Opened as a file, #l81 / #sph2 pick the page instead. -->
   <nav class="topnav" aria-label="Pages">
-    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs Artillery</a>
+    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs FireGrid</a>
     <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
     <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
     <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
@@ -1095,6 +1104,11 @@
 
   <!-- the tool chooser -->
   <section class="home" id="homeView" hidden>
+    <header class="home-head">
+      <h1>Wardogs FireGrid</h1>
+      <p>Artillery &amp; mortar fire control for the Wardogs L81 mortar and SPH-2: map grid
+        coordinates in, bearing and mils out.</p>
+    </header>
     <a class="tool-card nav-link" data-page="l81" href="l81">
       <span class="tool-k">Mortar</span>
       <span class="tool-name">L81 Mortar</span>
@@ -1117,12 +1131,14 @@
     </aside>
     <div class="home-support">
       <p><b>Free to use, always.</b> Hosting isn't free, though &mdash; donations help cover
-        the server costs and keep the calculator online.</p>
+        the server costs and keep FireGrid online.</p>
       <button type="button" class="support-open home-support-btn">Support &hearts;</button>
     </div>
     <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
       <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
     </a>
+    <p class="home-fine">Fan-made for WARDOGS, not affiliated with BULKHEAD or Team17 &middot;
+      <a href="privacy.html">Privacy</a></p>
   </section>
 
   <!-- desktop: three columns, one screen. Phones: display:contents flattens
@@ -1130,7 +1146,7 @@
   <section class="col col-in">
 
     <header>
-      <h1 id="pageTitle">Artillery &amp; Mortar Calculator</h1>
+      <h1 id="pageTitle">Wardogs FireGrid</h1>
       <p>A&sup2; + B&sup2; = C&sup2;</p>
     </header>
 
@@ -1205,7 +1221,8 @@
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
       <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
-      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
+      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a><br>
+      Fan-made, not affiliated with BULKHEAD or Team17
     </div>
 
   </section>
@@ -1444,10 +1461,10 @@
 </template>
 
 <dialog class="support-dlg" id="supportDlg" aria-labelledby="supportTitle">
-  <h2 id="supportTitle">Support the calculator</h2>
+  <h2 id="supportTitle">Support Wardogs FireGrid</h2>
   <p>These tools are free to use, and they'll stay that way.</p>
   <p>Hosting them isn't free, though. Donations go towards the server costs and help
-     keep the calculator online for everyone. Thank you!</p>
+     keep FireGrid online for everyone. Thank you!</p>
   <a class="donate-btn" id="donateBtn" href="#" target="_blank" rel="noopener">Donate with PayPal</a>
   <p class="donate-soon" id="donateSoon" hidden>Donations open here soon.</p>
   <form method="dialog"><button class="dlg-close">Close</button></form>
@@ -2538,18 +2555,22 @@
     },
 
     // where "Advertise here" sends people
-    advertiseUrl:  "mailto:support@lobbyforge.net?subject=Advertising%20on%20the%20Wardogs%20calculator",
+    advertiseUrl:  "mailto:support@lobbyforge.net?subject=Advertising%20on%20Wardogs%20FireGrid",
     lobbyforgeUrl: "https://lobbyforge.net/",
-    utmSource:     "wardogs-artillery"     // how these visits show in LobbyForge's analytics
+    utmSource:     "wardogs-firegrid"     // how these visits show in LobbyForge's analytics
   };
 
   var PAGE_INFO = {
-    home: { title: "Wardogs Artillery & Mortar Calculator",
-            h1: "Artillery & Mortar Calculator" },
-    l81:  { title: "L81 Mortar Calculator — Wardogs",
-            h1: "L81 Mortar Calculator", weapons: ["mortar"] },
-    sph2: { title: "SPH-2 Artillery Calculator — Wardogs",
-            h1: "SPH-2 Calculator", weapons: ["spgLow", "spgHigh"] }
+    home: { title: "Wardogs FireGrid | L81 Mortar & SPH-2 Artillery Calculator",
+            h1: "Wardogs FireGrid" },
+    l81:  { title: "L81 Mortar Calculator for Wardogs | Wardogs FireGrid",
+            h1: "L81 Mortar Calculator", weapons: ["mortar"],
+            desc: "Wardogs L81 mortar calculator: range, bearing and mils from map grid " +
+                  "coordinates, then adjust each round from where the last one landed." },
+    sph2: { title: "SPH-2 Artillery Calculator for Wardogs | Wardogs FireGrid",
+            h1: "SPH-2 Calculator", weapons: ["spgLow", "spgHigh"],
+            desc: "Wardogs SPH-2 artillery calculator, low and high arc: bearing and mils " +
+                  "from grid coordinates, corrected for target height, gun tilt and impacts." }
   };
 
   (function setUpPage() {
@@ -2558,6 +2579,7 @@
     document.getElementById("homeView").hidden = PAGE !== "home";
     document.title = info.title;
     document.getElementById("pageTitle").textContent = info.h1;
+    if (info.desc) document.querySelector('meta[name="description"]').content = info.desc;
 
     // tabs: real addresses on the server (relative, so a site in a folder
     // stays in it), #hash when opened as a file

@@ -1,7 +1,7 @@
-# Site settings: pages, donations and ad spaces
+# Wardogs FireGrid site settings: pages, donations and ad spaces
 
-These work the same wherever the site is hosted. For putting it online see
-[HOSTINGER.md](HOSTINGER.md) or [DEPLOY.md](DEPLOY.md) (Fly.io).
+These work the same wherever the site is hosted. It runs on Fly.io at
+`wardogsfiregrid.com`: [DEPLOY.md](DEPLOY.md).
 
 ## Pages
 
@@ -14,7 +14,7 @@ These work the same wherever the site is hosted. For putting it online see
 All three are the same file, `index.html` on the server. The server sends
 `/l81` and `/sph2` to it (`.htaccess` on Hostinger, `nginx.conf` on Fly.io)
 and the script shows the right page. The links between pages are relative, so
-the site also works in a folder, e.g. `lobbyforge.net/artillery/l81`. Opened
+the site also works in a folder, e.g. `example.com/firegrid/l81`. Opened
 straight from disk, the tabs use `#l81` and `#sph2` instead. Each page
 remembers its own gun position, weapon and mode.
 
@@ -34,13 +34,13 @@ var SITE_CONFIG = {
   },
   advertiseUrl:  "mailto:support@lobbyforge.net?subject=…",
   lobbyforgeUrl: "https://lobbyforge.net/",
-  utmSource:     "wardogs-artillery"
+  utmSource:     "wardogs-firegrid"
 };
 ```
 
 Edit, commit, and put the new version online. On Fly.io a merge to `main`
 deploys it once automatic deploys are on ([DEPLOY.md](DEPLOY.md), step 6),
-or run `fly deploy -a wardogs-artillery`. On Hostinger, upload the new
+or run `fly deploy -a wardogs-firegrid`. On Hostinger, upload the new
 `index.html` ([HOSTINGER.md](HOSTINGER.md#updating-the-site)).
 
 ## Donations
@@ -91,23 +91,17 @@ support email by default. Point it at a page or form if you have one.
 
 1. Put the site on **a domain you own** (AdSense won't take `*.fly.dev` or
    a host's temporary address).
-2. Sign up at <https://adsense.google.com> and add the **main domain** as the
-   site, e.g. `lobbyforge.net` even if the calculator is at
-   `artillery.lobbyforge.net`: AdSense takes main domains only, and an
-   approved domain covers its subdomains and folders. Put your publisher ID
+2. Sign up at <https://adsense.google.com> and add `wardogsfiregrid.com` as
+   the site (AdSense takes main domains only; an approved domain covers its
+   subdomains and folders). Put your publisher ID
    (`ca-pub-…`) in `adsenseClient` and update the site. On its own this only
    loads the AdSense script so Google can verify the site; the spaces don't
    change yet.
-3. **ads.txt** goes at the root of the **main domain**:
-   `https://lobbyforge.net/ads.txt`. Google doesn't look for it on a
-   subdomain. Copy the line from `deploy/ads.txt.example` with your publisher
-   number (the `pub-…` part) in place of the zeros, and:
-   - if the calculator *is* the main domain's site, save it as
-     `site/ads.txt` in the repo and update the site;
-   - otherwise add it to the `ads.txt` of whatever serves the main domain
-     (on Hostinger: File Manager → that website's `public_html`).
-
-   Check that `https://<main-domain>/ads.txt` shows it.
+3. **ads.txt**: copy `deploy/ads.txt.example` to `site/ads.txt`, put your
+   publisher number (the `pub-…` part) in place of the zeros, and deploy.
+   Check that `https://wardogsfiregrid.com/ads.txt` shows it. (Google reads
+   ads.txt only from a main domain, never a subdomain, so if the site ever
+   moves to a subdomain, the file has to go on the main domain instead.)
 4. Ask AdSense to review the site. Approval can take days to a few weeks.
 5. Once approved, create a **Display ad** unit, size **Fixed, 300 × 250**, for
    each space you want AdSense in, and put each unit's `data-ad-slot` number in
@@ -125,11 +119,26 @@ AdSense ads are shown at their real 300×250 size regardless of the page's
 fit-to-screen scaling, as ad-network rules require. A space a page doesn't show
 (the second one on the SPH-2 page) never requests an ad.
 
+## Getting found on Google
+
+`site/sitemap.xml` lists the three pages and `site/robots.txt` points search
+engines at it. To get indexed sooner and see what people search for:
+
+1. Go to <https://search.google.com/search-console>, **Add property →
+   Domain**, and enter `wardogsfiregrid.com`.
+2. It gives you a `TXT` record. Add it in Hostinger's DNS (**Domains →
+   wardogsfiregrid.com → DNS / Nameservers**), then click **Verify**. It can
+   take a few minutes for the record to be seen.
+3. **Sitemaps** → submit `https://wardogsfiregrid.com/sitemap.xml`.
+
+Links from where players are (Discord servers, Reddit, Steam guides) do more
+for ranking than anything on the page itself.
+
 ## LobbyForge
 
 - The ad and strip link to `lobbyforge.net` with tracking tags,
-  `?utm_source=wardogs-artillery&utm_medium=calculator&utm_campaign=house_ad`
-  (or `strip`). Visits from the calculator show up under that source in
+  `?utm_source=wardogs-firegrid&utm_medium=calculator&utm_campaign=house_ad`
+  (or `strip`). Visits from FireGrid show up under that source in
   LobbyForge's analytics.
 - The ad's wording is in the page's `tplLobbyForge` template. It uses
   lobbyforge.net's own lines and its name-banner logo; if the logo can't load,

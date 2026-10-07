@@ -1,4 +1,6 @@
-# Wardogs Artillery & Mortar Calculator
+# Wardogs FireGrid
+
+Artillery & mortar fire control for WARDOGS, at <https://wardogsfiregrid.com>.
 
 Range, bearing and mils for the Wardogs **L81 mortar** and **SPH-2** (low and
 high arc), from map coordinates.
@@ -22,8 +24,8 @@ pages (`#l81`, `#sph2` when opened from disk).
 
 ## Host it
 
-- **Fly.io** (in use): [DEPLOY.md](DEPLOY.md). A small nginx container at
-  `artillery.lobbyforge.net`, redeployed when `main` changes.
+- **Fly.io** (in use): [DEPLOY.md](DEPLOY.md). Its own small nginx app at
+  `wardogsfiregrid.com`, redeployed when `main` changes.
 - **Hostinger** or similar web hosting, as an alternative:
   [HOSTINGER.md](HOSTINGER.md). Upload four files.
 - Donate link, ad spaces, sponsors and AdSense, on either host:
@@ -41,6 +43,8 @@ pages (`#l81`, `#sph2` when opened from disk).
 | `deploy/ads.txt.example` | Template for AdSense's `ads.txt`. |
 
 ## Credits
+
+Fan-made; not affiliated with or endorsed by BULKHEAD or Team17.
 
 Firing tables are community measurements from
 [apollyon-sys/wardogs-calculator](https://github.com/apollyon-sys/wardogs-calculator)

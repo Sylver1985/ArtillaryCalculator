@@ -1,8 +1,8 @@
-# Fly.io app config. See DEPLOY.md.
+# Fly.io app config for Wardogs FireGrid (wardogsfiregrid.com). See DEPLOY.md.
 #
 # `app` is unique across all of Fly.io and gives the <app>.fly.dev address.
 # If it's ever taken, change it here and in DEPLOY.md's commands.
-app = "wardogs-artillery"
+app = "wardogs-firegrid"
 
 # Sydney. A static page loads fast from anywhere, so one region is plenty;
 # `fly platform regions` lists the others.
