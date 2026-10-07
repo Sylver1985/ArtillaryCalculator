@@ -64,7 +64,7 @@
   }
 
   /* frosted panels read as a HUD over the photo rather than flat cards */
-  .scale, .pos, .readout, .vis, .working, .actions button {
+  .setting, .pos, .readout, .vis, .working, .actions button {
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
   }
@@ -178,9 +178,9 @@
   .asl-field input { font-size: 16px; padding-left: 44px; }
   .asl-field input::placeholder { font-size: 11px; }
 
-  /* ---------- grid scale ---------- */
+  /* ---------- setting rows: targeting mode, weapon ---------- */
 
-  .scale {
+  .setting {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -190,14 +190,14 @@
     border-radius: 4px;
     padding: 9px 14px;
   }
-  .scale > span {
+  .setting > span {
     font-size: 10px;
     letter-spacing: 2px;
     color: var(--dim);
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .scale select {
+  .setting select {
     background: var(--panel-2);
     border: 1px solid var(--line);
     border-radius: 3px;
@@ -210,7 +210,7 @@
     flex: 1;
     max-width: 260px;
   }
-  .scale select:focus { border-color: var(--accent-dk); }
+  .setting select:focus { border-color: var(--accent-dk); }
 
   /* targeting mode switch */
   .seg { display: flex; gap: 6px; flex: 1; max-width: 260px; }
@@ -1025,8 +1025,8 @@
       border-radius: 0 0 4px 4px;
     }
     .range-box { border-radius: 4px 4px 0 0; }
-    .scale { flex-direction: column; align-items: stretch; gap: 6px; }
-    .scale select, .seg { max-width: none; }
+    .setting { flex-direction: column; align-items: stretch; gap: 6px; }
+    .setting select, .seg { max-width: none; }
   }
 
   /* ---------- desktop: every tool on one screen ---------- */
@@ -1134,7 +1134,7 @@
       <p>A&sup2; + B&sup2; = C&sup2;</p>
     </header>
 
-    <div class="scale">
+    <div class="setting">
       <span>Targeting</span>
       <div class="seg" role="group" aria-label="Targeting mode">
         <button type="button" data-mode="simple" aria-pressed="false"
@@ -1144,17 +1144,7 @@
       </div>
     </div>
 
-    <div class="scale">
-      <span>Grid scale</span>
-      <select id="scale">
-        <option value="100">1 coord unit = 100 m &nbsp;(Wardogs)</option>
-        <option value="10">1 coord unit = 10 m</option>
-        <option value="1">1 coord unit = 1 m &nbsp;(raw metres)</option>
-        <option value="1000">1 coord unit = 1000 m</option>
-      </select>
-    </div>
-
-    <div class="scale" id="weaponRow">
+    <div class="setting" id="weaponRow">
       <span id="weaponLabel">Weapon</span>
       <select id="weapon">
         <option value="mortar">L81 Mortar &mdash; 132&ndash;684 m</option>
@@ -1215,7 +1205,7 @@
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
       <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
-      Gun position, grid scale, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
+      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
     </div>
 
   </section>
@@ -1474,8 +1464,10 @@
       gunAslEl = document.getElementById("gunAsl"),
       tgtAslEl = document.getElementById("tgtAsl");
 
-  var scaleEl     = document.getElementById("scale"),
-      weaponEl    = document.getElementById("weapon"),
+  // Wardogs map coordinates are in units of 100 m: 96.67 is 9,667 m
+  var GRID_M = 100;
+
+  var weaponEl    = document.getElementById("weapon"),
       elevEl      = document.getElementById("elev"),
       elevNoteEl  = document.getElementById("elevNote"),
       elevBoxEl   = document.getElementById("elevBox"),
@@ -1629,9 +1621,9 @@
   if (IS_FILE) window.addEventListener("hashchange", function () { location.reload(); });
 
   // Gun position, weapon and mode belong to the page — a mortar pit and an
-  // SPH-2 are rarely parked in the same spot. Grid scale is shared. Before
-  // there were pages everything was stored unprefixed, so that is the
-  // fallback the first time a page is used.
+  // SPH-2 are rarely parked in the same spot. Before there were pages
+  // everything was stored unprefixed, so that is the fallback the first time
+  // a page is used.
   var PER_PAGE = { ax: 1, ay: 1, gunAsl: 1, weapon: 1, mode: 1 };
 
   function store(key, val) {
@@ -1798,7 +1790,7 @@
       ADJ_SPAN_DEG = 20, ADJ_SPAN_RANGE = 0.3;
 
   function gunKey() {
-    return [ax.value, ay.value, gunAslEl.value, scaleEl.value].join("|");
+    return [ax.value, ay.value, gunAslEl.value].join("|");
   }
 
   // the adjustment to use for a target at range r, bearing deg — or null
@@ -2058,9 +2050,8 @@
       return;
     }
 
-    // coords arrive in grid units; convert the deltas to metres.
-    // Wardogs reports 1 unit = 100 m, so 96.67 means 9,667 m.
-    var k = parseFloat(scaleEl.value) || 1;
+    // coords arrive in grid units; convert the deltas to metres
+    var k = GRID_M;
 
     // A = easting difference, B = northing difference (both in metres)
     var a = (x2 - x1) * k,
@@ -2404,7 +2395,7 @@
     var obs = [1, 2, 3].map(readObs).filter(Boolean),
         out = document.getElementById("cbOut"),
         use = document.getElementById("cbUse"),
-        k   = parseFloat(scaleEl.value) || 1;
+        k   = GRID_M;
 
     cbFix = null;
     use.disabled = true;
@@ -2708,7 +2699,7 @@
   // panel or the gun/target is incomplete.
   function adjRead() {
     var w  = WEAPONS[weaponEl.value] || WEAPONS.mortar,
-        k  = parseFloat(scaleEl.value) || 1,
+        k  = GRID_M,
         v  = [num(ax), num(ay), num(bx), num(by), num(adjMilEl), num(adjBrgEl), num(adjXEl), num(adjYEl)],
         i;
     for (i = 0; i < v.length; i++) if (v[i] === null) return null;
@@ -2862,11 +2853,6 @@
     copy(String(Math.round(lastRange)), " m");
   });
 
-  scaleEl.addEventListener("change", function () {
-    store("scale", scaleEl.value);
-    calc();
-  });
-
   document.getElementById("bearingBox").addEventListener("click", function () {
     if (lastDeg === null) return;
     copy(fmt(lastDeg, 1), "°");
@@ -2909,11 +2895,8 @@
     if (v) document.getElementById(k).value = v;
   });
 
-  // restore grid scale + weapon. A value with no matching option would blank
-  // the select and quietly fall back to raw metres, so only take known ones.
-  var savedScale = load("scale");
-  if (savedScale && [].some.call(scaleEl.options, function (o) { return o.value === savedScale; }))
-    scaleEl.value = savedScale;
+  // the grid scale used to be a setting; it is fixed now
+  try { localStorage.removeItem("scale"); } catch (e) { /* file:// may block */ }
 
   // only a weapon this page still offers (the SPH-2 page has no mortar)
   var savedWeapon = load("weapon");
