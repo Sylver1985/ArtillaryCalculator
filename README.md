@@ -1,4 +1,6 @@
-# Wardogs Artillery & Mortar Calculator
+# Wardogs FireGrid
+
+Artillery & mortar fire control for WARDOGS, at <https://wardogsfiregrid.com>.
 
 Range, bearing and mils for the Wardogs **L81 mortar** and **SPH-2** (low and
 high arc), from map coordinates.
@@ -10,29 +12,34 @@ high arc), from map coordinates.
   - **adjust from impact**: log where a round landed and the next round is
     corrected from it
 - Fits on one screen from a 1366×768 laptop to 4K, and works on phones.
-- A page for each gun, `/l81` and `/sph2`, with a tool chooser at `/`.
+- A page for each gun, `/l81` and `/sph2`, a tool chooser at `/`, and a
+  how-to guide at `/guide`.
 - Free to use: ad spaces for sponsors or AdSense, and a **Support** tab for
   PayPal donations towards hosting.
 
 ## Use
 
-Open `Artillery & Mortar Calculator.html` in a browser. It's one
-self-contained file with nothing to install; the L81 and SPH-2 tabs switch
-pages (`#l81`, `#sph2` when opened from disk).
+Open `Artillery & Mortar Calculator.html` in a browser; nothing to install.
+The calculator is self-contained; keep the `img/` folder beside it for the
+logo. The L81 and SPH-2 tabs switch pages (`#l81`, `#sph2` when opened from
+disk).
 
 ## Host it
 
-- **Hostinger** or similar web hosting: [HOSTINGER.md](HOSTINGER.md). Upload
-  four files; optional automatic updates from GitHub.
-- **Fly.io**: [DEPLOY.md](DEPLOY.md). A small nginx container.
+- **Fly.io** (in use): [DEPLOY.md](DEPLOY.md). Its own small nginx app at
+  `wardogsfiregrid.com`, redeployed when `main` changes.
+- **Hostinger** or similar web hosting, as an alternative:
+  [HOSTINGER.md](HOSTINGER.md). Upload four files.
 - Donate link, ad spaces, sponsors and AdSense, on either host:
   [SITE.md](SITE.md).
 
 | File | Purpose |
 |---|---|
 | `Artillery & Mortar Calculator.html` | The whole site in one file: tool chooser, L81 page and SPH-2 page. Served as `index.html`. |
+| `guide.html` | How to use FireGrid, served at `/guide`. |
 | `privacy.html` | Privacy page, linked from the calculator. |
-| `site/` | Extra files served next to the page: `robots.txt`, and later `ads.txt` and sponsor images. |
+| `img/` | Logo, tab icons and the link-preview image, built by `deploy/make-icons.py` from `design/firegrid-logo.webp`. |
+| `site/` | Extra files served next to the page: `robots.txt`, `sitemap.xml`, the IndexNow key, and later `ads.txt` and sponsor images. |
 | `deploy/htaccess` | Server settings for Hostinger (Apache/LiteSpeed), installed as `.htaccess`. |
 | `deploy/build-site.sh` | Builds the files for upload: `dist/site/` and `dist/wardogs-site.zip`. |
 | `.github/workflows/build-site.yml` | On each change to `main`: builds that zip as a download, and optionally publishes it to a branch for Hostinger to deploy. |
@@ -40,6 +47,8 @@ pages (`#l81`, `#sph2` when opened from disk).
 | `deploy/ads.txt.example` | Template for AdSense's `ads.txt`. |
 
 ## Credits
+
+Fan-made; not affiliated with or endorsed by BULKHEAD or Team17.
 
 Firing tables are community measurements from
 [apollyon-sys/wardogs-calculator](https://github.com/apollyon-sys/wardogs-calculator)

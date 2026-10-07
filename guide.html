@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Use FireGrid: Wardogs Mortar &amp; Artillery Guide (L81, SPH-2)</title>
+<meta name="description" content="Step-by-step Wardogs artillery guide: get L81 mortar and SPH-2 firing solutions from map coordinates, correct for height and gun tilt, and adjust fire from impacts.">
+<link rel="canonical" href="https://wardogsfiregrid.com/guide">
+<meta property="og:site_name" content="Wardogs FireGrid">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wardogsfiregrid.com/guide">
+<meta property="og:title" content="How to Use FireGrid: Wardogs Mortar &amp; Artillery Guide">
+<meta property="og:description" content="Get L81 mortar and SPH-2 artillery firing solutions from map coordinates, correct for height and tilt, and walk rounds onto target.">
+<meta property="og:image" content="https://wardogsfiregrid.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d1110">
+<link rel="icon" href="img/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "How to Use FireGrid: Wardogs Mortar & Artillery Guide",
+      "description": "How to get L81 mortar and SPH-2 artillery firing solutions in Wardogs from map coordinates, correct for height and gun tilt, and adjust fire from impacts.",
+      "url": "https://wardogsfiregrid.com/guide",
+      "image": "https://wardogsfiregrid.com/img/og-image.jpg",
+      "datePublished": "2026-10-07",
+      "dateModified": "2026-10-07",
+      "inLanguage": "en",
+      "about": { "@type": "VideoGame", "name": "WARDOGS" },
+      "author": { "@type": "Organization", "name": "Wardogs FireGrid", "url": "https://wardogsfiregrid.com/" },
+      "publisher": { "@type": "Organization", "name": "Wardogs FireGrid", "url": "https://wardogsfiregrid.com/",
+                     "logo": { "@type": "ImageObject", "url": "https://wardogsfiregrid.com/img/icon-192.png" } }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is Wardogs FireGrid free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. FireGrid is free to use with no account. Ads and donations cover the hosting." } },
+        { "@type": "Question", "name": "What units are Wardogs map coordinates in?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Units of 100 metres: a coordinate of 96.67 is 9,667 m. Type the numbers as the game shows them and FireGrid converts them." } },
+        { "@type": "Question", "name": "What is azimuth in Wardogs?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Wardogs calls the barrel's elevation its azimuth, measured in mils. FireGrid shows it in mils, alongside the bearing in degrees for the direction to turn." } },
+        { "@type": "Question", "name": "Why did my mortar round land short?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Usually imprecise coordinates or a target higher than the mortar. The L81's firing table has no height correction, so a higher target makes rounds fall short. Enter where the round landed in Adjust from impact to correct the next one." } },
+        { "@type": "Question", "name": "Does FireGrid work on a phone?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. On a phone the calculator stacks into one column, so you can run it beside the game." } },
+        { "@type": "Question", "name": "Is FireGrid official?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. It is a fan-made tool and is not affiliated with or endorsed by BULKHEAD or Team17." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root { --bg: #0d1110; --panel: #151b19; --panel-2: #1b2320; --line: #2c3a34; --text: #cfe3d8; --dim: #7d9286; --accent: #7dd87d; --accent-dk: #3f7a4a; --amber: #f0b23c; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    padding: 18px 16px 48px;
+    color: var(--text);
+    font: 15px/1.75 "Consolas", "DejaVu Sans Mono", "Courier New", monospace;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  /* top bar, as on the calculator */
+  .topbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px;
+    padding: 8px 12px; margin-bottom: 26px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; margin-right: auto; color: var(--accent);
+           font-weight: 700; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; }
+  .brand img { width: 30px; height: 30px; margin: -4px 0; }
+  .topbar nav a { color: var(--dim); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; }
+  .topbar nav a:hover, .topbar nav a[aria-current] { color: var(--accent); }
+  .topbar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+
+  header.hero { display: flex; align-items: center; gap: 22px; margin-bottom: 8px; }
+  header.hero img { width: 120px; height: 120px; flex: 0 0 auto; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7)); }
+  h1 { margin: 0 0 6px; color: var(--accent); font-size: 24px; line-height: 1.3; letter-spacing: 1px; }
+  .lead { margin: 0; color: var(--text); }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 8px; }
+  .cta a { padding: 9px 16px; border: 1px solid var(--accent-dk); border-radius: 3px; text-decoration: none;
+           font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .cta a:hover { background: #1f2a25; }
+
+  .toc { margin: 22px 0; padding: 12px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; font-size: 13px; }
+  .toc b { display: block; color: var(--dim); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+  .toc ol { margin: 6px 0 0; padding-left: 22px; columns: 2; column-gap: 28px; }
+  section { margin-top: 34px; }
+  h2 { margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+       color: var(--accent); font-size: 17px; letter-spacing: 1px; }
+  h3 { margin: 18px 0 4px; color: var(--amber); font-size: 14px; letter-spacing: 1px; }
+  p, li { margin: 0 0 10px; }
+  ul, ol { padding-left: 22px; }
+  .ui { color: var(--amber); white-space: nowrap; }
+  kbd { padding: 1px 6px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel-2); font: inherit; font-size: 13px; }
+  .box { padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent-dk); border-radius: 4px; }
+  .example { font-size: 14px; color: var(--dim); }
+  .example b { color: var(--text); }
+  dl.faq dt { margin-top: 16px; color: var(--amber); font-weight: 700; }
+  dl.faq dd { margin: 4px 0 0; }
+  footer { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--dim); }
+  footer a { color: var(--dim); }
+
+  @media (max-width: 600px) {
+    body { font-size: 14px; }
+    header.hero { flex-direction: column; align-items: flex-start; }
+    header.hero img { width: 96px; height: 96px; }
+    h1 { font-size: 20px; }
+    .toc ol { columns: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="./"><img src="img/firegrid-mark-96.webp" alt="" width="30" height="30">Wardogs FireGrid</a>
+    <nav aria-label="Pages">
+      <a href="l81">L81 Mortar</a>
+      <a href="sph2">SPH-2</a>
+      <a href="guide" aria-current="page">Guide</a>
+    </nav>
+  </div>
+
+  <main>
+    <header class="hero">
+      <img src="img/firegrid-logo-320.webp" alt="Wardogs FireGrid badge" width="120" height="120">
+      <div>
+        <h1>How to use Wardogs FireGrid: mortar &amp; artillery guide</h1>
+        <p class="lead">FireGrid is a free Wardogs artillery and mortar calculator. Give it your
+          gun's map coordinates and the target's, and it gives you the firing solution: the
+          bearing to turn to and the mils to set, for the L81 mortar and the SPH-2
+          self-propelled howitzer.</p>
+      </div>
+    </header>
+    <p>This guide covers every part of it, from your first fire mission to correcting
+      fire from where your rounds land.</p>
+
+    <div class="cta">
+      <a href="l81">Open the L81 mortar calculator &rarr;</a>
+      <a href="sph2">Open the SPH-2 artillery calculator &rarr;</a>
+    </div>
+
+    <nav class="toc" aria-label="Contents">
+      <b>Contents</b>
+      <ol>
+        <li><a href="#quick-start">Quick start</a></li>
+        <li><a href="#coordinates">Reading map coordinates</a></li>
+        <li><a href="#readout">The firing solution</a></li>
+        <li><a href="#l81">The L81 mortar</a></li>
+        <li><a href="#sph2">The SPH-2 howitzer</a></li>
+        <li><a href="#modes">Simple and Advanced</a></li>
+        <li><a href="#height">Height (ASL)</a></li>
+        <li><a href="#tilt">Levelling the SPH-2</a></li>
+        <li><a href="#adjust">Adjust from impact</a></li>
+        <li><a href="#tips">Tips for first-round hits</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ol>
+    </nav>
+
+    <section id="quick-start">
+      <h2>Quick start: your first fire mission</h2>
+      <ol>
+        <li>Open the calculator for your weapon: <a href="l81">L81 Mortar</a> or
+          <a href="sph2">SPH-2</a>.</li>
+        <li>On the in-game map, find your gun and type its X and Y into
+          <span class="ui">Your position &mdash; gun</span>.</li>
+        <li>Find the target on the map and type its X and Y into
+          <span class="ui">Target position &mdash; enemy</span>.</li>
+        <li>Turn the gun to the <span class="ui">Bearing</span> in degrees, and set the barrel to the
+          <span class="ui">Azimuth</span> in mils.</li>
+        <li>Fire. If the round misses, enter where it landed in
+          <a href="#adjust">Adjust from impact</a> and fire again with the corrected numbers.</li>
+      </ol>
+      <p>The solution updates as you type; there's no button to press.
+        <kbd>Enter</kbd> moves to the next field, <kbd>Esc</kbd> clears the target for a new one,
+        and clicking any readout copies it. Your gun position, weapon and mode are remembered
+        in your browser, so they're still there next time.</p>
+    </section>
+
+    <section id="coordinates">
+      <h2>Reading coordinates from the Wardogs map</h2>
+      <p>Wardogs map coordinates are in units of 100 metres: a coordinate of 96.67 is 9,667 m
+        along that axis. Type the numbers exactly as the game shows them, decimals included,
+        and FireGrid converts them to metres.</p>
+      <p>Precision is what decides a hit. Each 0.01 is one metre, so a reading that's 0.1 out
+        puts the round 10 m off: often the difference between a direct hit and a near miss.
+        Zoom the map in before you read a position, and read both X and Y to two decimals.</p>
+      <p>Use the gun's own position, not your character's: on the SPH-2 that's the vehicle,
+        and on the L81 the mortar where you set it down. Re-enter it every time you move.</p>
+    </section>
+
+    <section id="readout">
+      <h2>Understanding the firing solution</h2>
+      <h3>Range</h3>
+      <p>The straight-line distance from gun to target across the map, in metres, with the
+        exact figure underneath.</p>
+      <h3>Bearing</h3>
+      <p>The direction to turn to, in degrees clockwise from grid north (north is +Y on the
+        map), with the compass point beside it, for example <b>203.5&deg; SSW</b>. The compass
+        drawing shows the same direction.</p>
+      <h3>Azimuth</h3>
+      <p>The barrel's elevation in mils. Wardogs calls this the azimuth, so FireGrid uses the
+        game's word. Wardogs mils are on a 6,400-mil circle (one mil is 0.05625&deg;); the
+        elevation drawing shows the angle in degrees as well.</p>
+      <h3>The working</h3>
+      <p>The panel at the bottom shows the maths, A&sup2; + B&sup2; = C&sup2;: the east&ndash;west and
+        north&ndash;south distances to the target and the range they make. It's a quick way to
+        check a coordinate you might have mistyped.</p>
+    </section>
+
+    <section id="l81">
+      <h2>The L81 mortar</h2>
+      <p>The L81 reaches from <b>132 m to 684 m</b> and fires at a high angle only, so the
+        more mils you set, the shorter the round falls. FireGrid reads the solution
+        straight from the L81's firing table.</p>
+      <p>The L81's table has no height correction. If the target sits higher than your mortar,
+        expect rounds to land short; lower, and they land long. Enter both heights in Advanced
+        mode and FireGrid tells you which way to expect the miss, then use
+        <a href="#adjust">Adjust from impact</a> to walk the rounds on.</p>
+    </section>
+
+    <section id="sph2">
+      <h2>The SPH-2 self-propelled howitzer</h2>
+      <p>The SPH-2 fires in two arcs; choose one with the <span class="ui">Arc</span> selector.</p>
+      <ul>
+        <li><b>Low arc, 1,181&ndash;2,629 m:</b> a flatter trajectory and a shorter flight, for
+          targets in the open.</li>
+        <li><b>High arc, 780&ndash;2,629 m:</b> a steep trajectory that drops over hills, trees and
+          buildings a low-arc shell would hit, and reaches closer targets. In high arc, more
+          mils means a shorter range.</li>
+      </ul>
+      <p>In Advanced mode the SPH-2 also gets the height correction and the platform-tilt
+        correction described below.</p>
+    </section>
+
+    <section id="modes">
+      <h2>Simple and Advanced targeting</h2>
+      <p><b>Simple</b> is flat ground, straight from the firing table. It's the quickest, and
+        right when your gun is level and the target is at about your height.</p>
+      <p><b>Advanced</b> (the default) adds:</p>
+      <ul>
+        <li>target-height correction for the SPH-2,</li>
+        <li>gun-platform tilt for the SPH-2,</li>
+        <li>Adjust from impact, for both guns.</li>
+      </ul>
+      <p>Switch with the <span class="ui">Targeting</span> buttons at the top of the calculator.
+        Each calculator page remembers its own choice.</p>
+    </section>
+
+    <section id="height">
+      <h2>Correcting for height (ASL)</h2>
+      <p>ASL is height above sea level, in metres. Take it from the ASL readout in your sight,
+        and enter your gun's height and the target's in the two <span class="ui">ASL</span> boxes.
+        A blank box counts as 0, so if you only know your own height, enter it and leave the
+        target blank.</p>
+      <p>A shell fired at a target below you travels further before it lands than it would on
+        level ground, and one fired uphill falls shorter. On the SPH-2, FireGrid works the
+        trajectory out to the target's height and shows the level-ground range it's firing as,
+        for example <i>fires as for 1,620 m on level ground</i>.</p>
+      <div class="box example">Example: gun at <b>ASL 173</b>, target at <b>ASL 40</b>. The target is
+        133 m below you, so FireGrid sets the SPH-2 for a shorter level-ground range than the map
+        distance; without the correction the round would sail long.</div>
+    </section>
+
+    <section id="tilt">
+      <h2>Levelling the SPH-2 (gun-platform tilt)</h2>
+      <p>On uneven ground the SPH-2 leans, and a leaning gun throws its shells off line and off
+        range. The <span class="ui">Gun platform</span> panel copies the in-game tilt indicator:
+        a ladder of three notches either side of level, for <b>roll</b> (leaning left or right)
+        and <b>pitch</b> (nose up or down).</p>
+      <ol>
+        <li>Look at the tilt indicator in game.</li>
+        <li>Drag across the drawing for roll and up or down for pitch, or use the
+          <span class="ui">Roll</span> and <span class="ui">Pitch</span> sliders, until it matches.
+          One notch is about 10&deg;.</li>
+        <li>If the hull points a different way from the gun, type the hull's heading in degrees
+          into <span class="ui">Hull faces</span>. Left blank, the hull is taken to face the same
+          way as the gun.</li>
+      </ol>
+      <p>The bearing and mils are then corrected for the lean, and the readout says
+        <i>lean-corrected</i>. <span class="ui">Set level</span> puts it back to zero. Parking on
+        level ground is still the most accurate option when you can.</p>
+    </section>
+
+    <section id="adjust">
+      <h2>Adjust from impact</h2>
+      <p>No calculator knows exactly how your gun is sitting, so the fastest way onto a target
+        is to fire, see where the round lands, and correct. FireGrid does the correction for
+        you:</p>
+      <ol>
+        <li>Fire using the solution. FireGrid fills <span class="ui">Fired</span> with the mils and
+          bearing on screen; change them if you fired something else.</li>
+        <li>Find where the round landed on the map and enter its X and Y under
+          <span class="ui">Landed</span>, plus its ASL if it landed at a different height
+          (blank means the target's height).</li>
+        <li>FireGrid shows how far long or short and left or right it landed, and the corrected
+          next round, for example <i>Landed 30 m short, 12 m left &rarr; next 1223 mil &middot;
+          204.5&deg;</i>.</li>
+        <li>Press <span class="ui">Apply</span>. The correction becomes part of the solution.</li>
+      </ol>
+      <p>The correction is what your gun's position adds, so it stays in use for other targets
+        nearby, within about 20&deg; of bearing and 30% of range of where it was measured. Log the
+        next impact to refine it. <span class="ui">Clear</span> drops it, and moving your gun or
+        changing weapon drops it on its own.</p>
+    </section>
+
+    <section id="tips">
+      <h2>Tips for first-round hits</h2>
+      <ul>
+        <li>Read every coordinate to two decimals with the map zoomed in.</li>
+        <li>Re-enter your own position whenever you move, even a short way.</li>
+        <li>Enter heights in hilly ground; on the SPH-2 they make a big difference at long range.</li>
+        <li>Park the SPH-2 level, or match the tilt gauge if you can't.</li>
+        <li>Work with a spotter: they call where each round lands, you log it in Adjust from
+          impact.</li>
+        <li>Click the bearing or azimuth to copy it and paste it to your squad.</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>FAQ</h2>
+      <dl class="faq">
+        <dt>Is Wardogs FireGrid free?</dt>
+        <dd>Yes, with no account or download. Ads and donations cover the hosting; the
+          <b>Support</b> button on the calculator explains more.</dd>
+        <dt>What units are Wardogs map coordinates in?</dt>
+        <dd>Units of 100 metres: 96.67 is 9,667 m. Type the numbers as the game shows them.</dd>
+        <dt>What is azimuth in Wardogs?</dt>
+        <dd>The barrel's elevation, in mils. FireGrid shows it beside the bearing, which is the
+          direction to turn in degrees.</dd>
+        <dt>Why did my mortar round land short?</dt>
+        <dd>Usually a coordinate that's slightly off, or a target higher than the mortar: the
+          L81's firing table has no height correction, so uphill rounds fall short. Log the
+          impact in Adjust from impact and the next round is corrected.</dd>
+        <dt>Low arc or high arc on the SPH-2?</dt>
+        <dd>Low arc for open ground and the quicker flight; high arc to drop over cover or for
+          targets closer than 1,181 m.</dd>
+        <dt>Does FireGrid work on a phone?</dt>
+        <dd>Yes. On a phone the calculator stacks into one column, handy beside the game or on a
+          second screen.</dd>
+        <dt>Where do the numbers come from?</dt>
+        <dd>The firing tables are community measurements from
+          <a href="https://github.com/apollyon-sys/wardogs-calculator" rel="noopener">apollyon-sys/wardogs-calculator</a>;
+          BULKHEAD publishes no official ballistics. The SPH-2's height and tilt corrections come
+          from a ballistic model fitted to those tables and checked against shots in game.</dd>
+        <dt>Is FireGrid official?</dt>
+        <dd>No. It's a fan-made tool, not affiliated with or endorsed by BULKHEAD or Team17.</dd>
+      </dl>
+    </section>
+
+    <div class="cta">
+      <a href="l81">Open the L81 mortar calculator &rarr;</a>
+      <a href="sph2">Open the SPH-2 artillery calculator &rarr;</a>
+    </div>
+  </main>
+
+  <footer>
+    Wardogs FireGrid &middot; fan-made for WARDOGS, not affiliated with BULKHEAD or Team17 &middot;
+    <a href="./">Calculator</a> &middot; <a href="privacy.html">Privacy</a>
+  </footer>
+</div>
+</body>
+</html>

@@ -3,10 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wardogs Artillery &amp; Mortar Calculator</title>
-<meta name="description" content="Range, bearing and mils for the Wardogs L81 mortar and SPH-2, with target-height and platform-tilt correction and adjust-from-impact.">
+<title>Wardogs FireGrid: Artillery &amp; Mortar Calculator (L81, SPH-2)</title>
+<meta name="description" content="Free Wardogs artillery and mortar calculator for the L81 and SPH-2: map coordinates in, bearing and mils out, with height, tilt and impact corrections.">
+<meta property="og:site_name" content="Wardogs FireGrid">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Wardogs FireGrid: Artillery &amp; Mortar Calculator (L81, SPH-2)">
+<meta property="og:description" content="Free fire-control calculator for the Wardogs L81 mortar and SPH-2 artillery: grid coordinates in, bearing and mils out.">
+<meta property="og:image" content="https://wardogsfiregrid.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wardogs FireGrid badge: an L81 mortar and an SPH-2 under a targeting grid">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1110">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230d1110%27/%3E%3Cpath d=%27M5 25 L14 13%27 stroke=%27%23f0b23c%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M7 25 Q16 1 27 25%27 fill=%27none%27 stroke=%27%237dd87d%27 stroke-width=%272%27 stroke-dasharray=%273 2%27/%3E%3C/svg%3E">
+<link rel="icon" href="img/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Wardogs FireGrid",
+      "url": "https://wardogsfiregrid.com/"
+    },
+    {
+      "@type": "WebApplication",
+      "name": "Wardogs FireGrid",
+      "alternateName": ["Wardogs artillery calculator", "Wardogs mortar calculator"],
+      "url": "https://wardogsfiregrid.com/",
+      "description": "Free artillery and mortar calculator for WARDOGS: firing solutions for the L81 mortar and SPH-2 self-propelled howitzer from map coordinates, with height, platform-tilt and adjust-from-impact corrections.",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any (web browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "image": "https://wardogsfiregrid.com/img/og-image.jpg",
+      "about": { "@type": "VideoGame", "name": "WARDOGS" },
+      "featureList": ["L81 mortar calculator", "SPH-2 low and high arc calculator", "Bearing and mils from map coordinates", "Target height (ASL) correction", "Gun platform tilt correction", "Adjust fire from impact"]
+    }
+  ]
+}
+</script>
 <style>
   :root {
     --bg:        #0d1110;
@@ -86,7 +124,7 @@
   .readout, .visuals, .working, .adj { order: 2; }
   .cb, .ad-slot { order: 3; }
   .home .ad-slot { order: 0; }        /* on the chooser it sits beside the tool cards */
-  .actions, .lf-strip, .hint { order: 4; }
+  .actions, .lf-strip, .hint, .ad-slot.banner { order: 4; }   /* a banner follows the buttons */
 
   header {
     text-align: center;
@@ -649,6 +687,8 @@
   /* ---------- ad space and LobbyForge ---------- */
 
   .ad-slot {
+    --ad-w: 300px;            /* the creative's size; banners set their own */
+    --ad-h: 250px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -663,7 +703,7 @@
     margin-bottom: 6px;
   }
   .ad-fill {
-    min-height: 250px;
+    min-height: var(--ad-h);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -671,7 +711,7 @@
   /* A network ad keeps its real 300x250 whatever the page's fit-to-screen
      zoom: scaling someone else's ad is both ugly and against ad-network
      rules, so the zoom is undone here and the space sized to match. */
-  .ad-slot.net .ad-fill { min-height: calc(250px / var(--fit, 1)); }
+  .ad-slot.net .ad-fill { min-height: calc(var(--ad-h) / var(--fit, 1)); }
   .ad-host { zoom: calc(1 / var(--fit, 1)); }
 
   /* LobbyForge: Discord blurple, so it reads as a different product */
@@ -741,7 +781,40 @@
 
   /* a paid sponsor's own 300x250 creative */
   .sponsor-link { display: block; line-height: 0; }
-  .sponsor-link img { display: block; width: 300px; height: 250px; max-width: 100%; object-fit: contain; }
+  .sponsor-link img { display: block; width: var(--ad-w); height: var(--ad-h); max-width: 100%; object-fit: contain; }
+
+  /* banner spaces in the left column: no panel, so the banner gets the room */
+  .ad-slot.banner { background: none; border: 0; padding: 0; }
+  .ad-slot.banner .ad-label { margin-bottom: 3px; font-size: 8.5px; line-height: 9px; text-align: center; }
+  .ad-slot[data-size="320x100"] { --ad-w: 320px; --ad-h: 100px; }
+  .ad-slot[data-size="320x50"]  { --ad-w: 320px; --ad-h: 50px; }
+  .app:not(.page-l81) [data-slot="left-l81"],
+  .app:not(.page-sph2) [data-slot="left-sph2"] { display: none; }
+  .lf-banner, .adv-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 12px;
+    width: var(--ad-w);
+    max-width: 100%;
+    height: var(--ad-h);
+    padding: 4px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+  }
+  .lf-banner {
+    border: 1px solid #3c4170;
+    background: linear-gradient(160deg, rgba(88, 101, 242, 0.22), rgba(21, 27, 25, 0.6) 70%);
+  }
+  .lf-banner:hover { border-color: #5865f2; }
+  .lf-banner .lf-logo { height: 18px; }
+  .lf-banner-copy { font-size: 11px; color: #e6e8ff; }
+  .adv-banner { flex-direction: column; flex-wrap: nowrap; border: 1px dashed #3c4a44; background: rgba(21, 27, 25, 0.55); }
+  .adv-banner:hover { border-color: var(--accent-dk); }
+  .adv-banner .adv-head { font-size: 14px; }
+  .adv-banner .adv-copy { font-size: 10.5px; line-height: 1.3; }
 
   /* ---------- pages: top bar, tool chooser ---------- */
 
@@ -759,6 +832,9 @@
     -webkit-backdrop-filter: blur(3px);
   }
   .nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     margin-right: auto;
     padding: 4px 8px;
     font-size: 12px;
@@ -834,6 +910,15 @@
   .home-support p { margin: 0; flex: 1; }
   .home-support b { color: var(--text); }
   .home-support-btn { flex: 0 0 auto; padding: 8px 16px; color: var(--amber); }
+  .nav-mark { width: 30px; height: 30px; margin: -6px 0; }   /* no taller than the tabs */
+  .home-head { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .home-logo { width: 170px; height: auto; filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7)); }
+  .home-head h1 { font-size: 26px; letter-spacing: 6px; margin-bottom: 6px; }
+  .home-head p { font-size: 12px; line-height: 1.6; }
+  .home-head p a { color: var(--accent); }
+  .h1-sub { display: block; margin-top: 4px; font-size: 13px; letter-spacing: 4px; color: var(--amber); }
+  .home-fine { order: 5; margin: 0; font-size: 10.5px; color: #4b5a52; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95); }
+  .home-fine a { color: var(--dim); }
 
   /* ---------- support (donations) ---------- */
 
@@ -1055,7 +1140,8 @@
       align-content: start;
       gap: 14px;
     }
-    .home-support, .home .lf-strip { grid-column: 1 / -1; }
+    .home-head, .home-support, .home .lf-strip, .home-fine { grid-column: 1 / -1; }
+    .home-head { flex-direction: row; gap: 24px; }
     .support-dlg { zoom: var(--fit, 1); }     /* it sits outside .app, so scale it to match */
     .col {
       display: flex;
@@ -1087,14 +1173,26 @@
   <!-- One file, three pages: the tool chooser (/), the L81 (/l81) and the
        SPH-2 (/sph2). Opened as a file, #l81 / #sph2 pick the page instead. -->
   <nav class="topnav" aria-label="Pages">
-    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs Artillery</a>
+    <a class="nav-brand nav-link" data-page="home" href="./"><img class="nav-mark" src="img/firegrid-mark-96.webp" alt="" width="30" height="30" onerror="this.remove()">Wardogs FireGrid</a>
     <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
     <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
+    <a class="nav-tab nav-guide" href="guide">Guide</a>
     <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
   </nav>
 
   <!-- the tool chooser -->
   <section class="home" id="homeView" hidden>
+    <header class="home-head">
+      <img class="home-logo" src="img/firegrid-logo-320.webp"
+           srcset="img/firegrid-logo-320.webp 320w, img/firegrid-logo-640.webp 640w" sizes="240px"
+           width="170" height="170" onerror="this.remove()"
+           alt="Wardogs FireGrid: L81 mortar and SPH-2 artillery strike coordination calculator">
+      <div>
+        <h1>Wardogs FireGrid <span class="h1-sub">Artillery &amp; mortar calculator</span></h1>
+        <p>Firing solutions for the Wardogs L81 mortar and SPH-2: map coordinates in, bearing
+          and mils out. New here? <a class="nav-guide" href="guide">How to use FireGrid &rarr;</a></p>
+      </div>
+    </header>
     <a class="tool-card nav-link" data-page="l81" href="l81">
       <span class="tool-k">Mortar</span>
       <span class="tool-name">L81 Mortar</span>
@@ -1117,12 +1215,14 @@
     </aside>
     <div class="home-support">
       <p><b>Free to use, always.</b> Hosting isn't free, though &mdash; donations help cover
-        the server costs and keep the calculator online.</p>
+        the server costs and keep FireGrid online.</p>
       <button type="button" class="support-open home-support-btn">Support &hearts;</button>
     </div>
     <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
       <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
     </a>
+    <p class="home-fine">Fan-made for WARDOGS, not affiliated with BULKHEAD or Team17 &middot;
+      <a href="privacy.html">Privacy</a></p>
   </section>
 
   <!-- desktop: three columns, one screen. Phones: display:contents flattens
@@ -1130,7 +1230,7 @@
   <section class="col col-in">
 
     <header>
-      <h1 id="pageTitle">Artillery &amp; Mortar Calculator</h1>
+      <h1 id="pageTitle">Wardogs FireGrid</h1>
       <p>A&sup2; + B&sup2; = C&sup2;</p>
     </header>
 
@@ -1196,16 +1296,23 @@
       <button id="clearAll">Clear all</button>
     </div>
 
-    <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
-      <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
-    </a>
+    <!-- banner spaces: each tool page has its own, sized to the room it has -->
+    <aside class="ad-slot banner" data-slot="left-l81" data-size="320x100" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
+    <aside class="ad-slot banner" data-slot="left-sph2" data-size="320x50" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
 
     <div class="hint">
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
       <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
-      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
+      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a><br>
+      Fan-made, not affiliated with BULKHEAD or Team17
     </div>
 
   </section>
@@ -1443,11 +1550,25 @@
   </a>
 </template>
 
+<template id="tplLobbyForgeBanner">
+  <a class="lf-banner lf-link" href="https://lobbyforge.net/" data-utm="banner" target="_blank" rel="noopener">
+    <img class="lf-logo" src="https://lobbyforge.net/lf_name_banner.png" alt="LobbyForge"
+         onerror="this.replaceWith(Object.assign(document.createElement('span'), {className: 'lf-brand', textContent: 'LobbyForge'}))">
+    <span class="lf-banner-copy">The Discord LFG bot you design yourself &rarr;</span>
+  </a>
+</template>
+<template id="tplAdvertiseBanner">
+  <a class="adv-banner" href="#" target="_blank" rel="noopener">
+    <span class="adv-head">Advertise here</span>
+    <span class="adv-copy"><span class="adv-size"></span> banner &middot; get in touch &rarr;</span>
+  </a>
+</template>
+
 <dialog class="support-dlg" id="supportDlg" aria-labelledby="supportTitle">
-  <h2 id="supportTitle">Support the calculator</h2>
+  <h2 id="supportTitle">Support Wardogs FireGrid</h2>
   <p>These tools are free to use, and they'll stay that way.</p>
   <p>Hosting them isn't free, though. Donations go towards the server costs and help
-     keep the calculator online for everyone. Thank you!</p>
+     keep FireGrid online for everyone. Thank you!</p>
   <a class="donate-btn" id="donateBtn" href="#" target="_blank" rel="noopener">Donate with PayPal</a>
   <p class="donate-soon" id="donateSoon" hidden>Donations open here soon.</p>
   <form method="dialog"><button class="dlg-close">Close</button></form>
@@ -2523,6 +2644,9 @@
   // own just loads the AdSense script so Google can verify the site.
   // DEPLOY.md walks through all of it.
   var SITE_CONFIG = {
+    // the site's address, for search engines' canonical links
+    siteUrl: "https://wardogsfiregrid.com",
+
     // the Support button's PayPal link: a paypal.me link, or the link from
     // a PayPal Donate button. Blank shows "Donations open here soon".
     donateUrl: "https://paypal.me/cryptointelligence",
@@ -2530,26 +2654,33 @@
     adsenseClient: "",                     // publisher ID, "ca-pub-0000000000000000"
 
     // A booked sponsor for a space looks like
-    //   sponsor: { image: "https://…/ad-300x250.png", url: "https://…", alt: "Who it is" }
+    //   sponsor: { image: "sponsors/acme-300x250.png", url: "https://…", alt: "Who it is" }
+    // and the image must be the space's size.
     slots: {
-      "side-1": { adsenseSlot: "", sponsor: null },   // right column, both tool pages
-      "side-2": { adsenseSlot: "", sponsor: null },   // right column, L81 page only
-      "home-1": { adsenseSlot: "", sponsor: null }    // the tool chooser
+      "side-1":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, both tool pages
+      "side-2":    { adsenseSlot: "", sponsor: null },   // 300x250, right column, L81 page
+      "left-l81":  { adsenseSlot: "", sponsor: null },   // 320x100, left column, L81 page
+      "left-sph2": { adsenseSlot: "", sponsor: null },   // 320x50,  left column, SPH-2 page
+      "home-1":    { adsenseSlot: "", sponsor: null }    // 300x250, the tool chooser
     },
 
     // where "Advertise here" sends people
-    advertiseUrl:  "mailto:support@lobbyforge.net?subject=Advertising%20on%20the%20Wardogs%20calculator",
+    advertiseUrl:  "mailto:support@lobbyforge.net?subject=Advertising%20on%20Wardogs%20FireGrid",
     lobbyforgeUrl: "https://lobbyforge.net/",
-    utmSource:     "wardogs-artillery"     // how these visits show in LobbyForge's analytics
+    utmSource:     "wardogs-firegrid"     // how these visits show in LobbyForge's analytics
   };
 
   var PAGE_INFO = {
-    home: { title: "Wardogs Artillery & Mortar Calculator",
-            h1: "Artillery & Mortar Calculator" },
-    l81:  { title: "L81 Mortar Calculator — Wardogs",
-            h1: "L81 Mortar Calculator", weapons: ["mortar"] },
-    sph2: { title: "SPH-2 Artillery Calculator — Wardogs",
-            h1: "SPH-2 Calculator", weapons: ["spgLow", "spgHigh"] }
+    home: { title: "Wardogs FireGrid: Artillery & Mortar Calculator (L81, SPH-2)",
+            h1: "Wardogs FireGrid", path: "/" },
+    l81:  { title: "Wardogs L81 Mortar Calculator: Range, Bearing & Mils | FireGrid",
+            h1: "L81 Mortar Calculator", weapons: ["mortar"], path: "/l81",
+            desc: "Wardogs L81 mortar calculator: range, bearing and mils from map " +
+                  "coordinates, then adjust each round from where the last one landed." },
+    sph2: { title: "Wardogs SPH-2 Artillery Calculator (Low & High Arc) | FireGrid",
+            h1: "SPH-2 Artillery Calculator", weapons: ["spgLow", "spgHigh"], path: "/sph2",
+            desc: "Wardogs SPH-2 artillery calculator for low and high arc: bearing and " +
+                  "mils from map coordinates, corrected for target height, gun tilt and impacts." }
   };
 
   (function setUpPage() {
@@ -2558,6 +2689,24 @@
     document.getElementById("homeView").hidden = PAGE !== "home";
     document.title = info.title;
     document.getElementById("pageTitle").textContent = info.h1;
+    if (info.desc) document.querySelector('meta[name="description"]').content = info.desc;
+    document.querySelector('meta[property="og:title"]').content = info.title;
+
+    // one address per page for search engines, whichever host name served it
+    // (wardogsfiregrid.com, www., or the fly.dev address)
+    if (!IS_FILE && SITE_CONFIG.siteUrl) {
+      var canon = document.createElement("link");
+      canon.rel = "canonical";
+      canon.href = SITE_CONFIG.siteUrl + info.path;
+      document.head.appendChild(canon);
+      var ogUrl = document.createElement("meta");
+      ogUrl.setAttribute("property", "og:url");
+      ogUrl.content = canon.href;
+      document.head.appendChild(ogUrl);
+    }
+    [].forEach.call(document.querySelectorAll(".nav-guide"), function (a) {
+      a.href = IS_FILE ? "guide.html" : "guide";
+    });
 
     // tabs: real addresses on the server (relative, so a site in a folder
     // stays in it), #hash when opened as a file
@@ -2596,11 +2745,14 @@
       document.head.appendChild(js);
     }
 
-    [].forEach.call(document.querySelectorAll(".ad-slot"), function (slot) {
-      // only spaces this page shows: an ad must never be requested hidden
-      if (slot.offsetParent === null) return;
+    // only spaces this page shows: an ad must never be requested hidden
+    var spaces = [].filter.call(document.querySelectorAll(".ad-slot"), function (slot) {
+      return slot.offsetParent !== null;
+    }), unsold = [];
 
+    spaces.forEach(function (slot) {
       var sc    = cfg.slots[slot.getAttribute("data-slot")] || {},
+          size  = (slot.getAttribute("data-size") || "300x250").split("x"),
           fill  = slot.querySelector(".ad-fill"),
           label = slot.querySelector(".ad-label"),
           sp    = sc.sponsor;
@@ -2614,38 +2766,46 @@
         link.rel = "sponsored noopener";
         img.src = sp.image;
         img.alt = sp.alt || "Sponsor";
-        img.width = 300;
-        img.height = 250;
+        img.width = +size[0];
+        img.height = +size[1];
         link.appendChild(img);
         fill.appendChild(link);
         label.textContent = "Sponsored";
       } else if (cfg.adsenseClient && sc.adsenseSlot) {   // AdSense
         var ins = document.createElement("ins");
         ins.className = "adsbygoogle ad-host";
-        ins.style.cssText = "display:inline-block;width:300px;height:250px";
+        ins.style.cssText = "display:inline-block;width:" + size[0] + "px;height:" + size[1] + "px";
         ins.setAttribute("data-ad-client", cfg.adsenseClient);
         ins.setAttribute("data-ad-slot", sc.adsenseSlot);
         fill.appendChild(ins);
         slot.classList.add("net");
         label.textContent = "Advertisement";
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } else if (!lfShown) {                              // LobbyForge, once
-        fill.appendChild(document.getElementById("tplLobbyForge").content.cloneNode(true));
+      } else {
+        unsold.push(slot);
+      }
+    });
+
+    // LobbyForge takes one unsold space, a 300x250 one if there is one
+    var lf = unsold.filter(function (s) { return !s.classList.contains("banner"); })[0] || unsold[0];
+    unsold.forEach(function (slot) {
+      var banner = slot.classList.contains("banner"),
+          fill   = slot.querySelector(".ad-fill"),
+          label  = slot.querySelector(".ad-label");
+      if (slot === lf) {
+        fill.appendChild(document.getElementById(banner ? "tplLobbyForgeBanner" : "tplLobbyForge").content.cloneNode(true));
         label.textContent = "Sponsored";
-        lfShown = true;
-      } else {                                            // for sale
-        fill.appendChild(document.getElementById("tplAdvertise").content.cloneNode(true));
-        fill.querySelector(".adv-card").href = cfg.advertiseUrl;
+      } else {
+        fill.appendChild(document.getElementById(banner ? "tplAdvertiseBanner" : "tplAdvertise").content.cloneNode(true));
+        fill.querySelector("a").href = cfg.advertiseUrl;
+        if (banner) fill.querySelector(".adv-size").textContent = slot.getAttribute("data-size").replace("x", "×");
         label.textContent = "Ad space";
       }
     });
 
-    // if every space is taken, LobbyForge keeps its one-line strip instead
-    if (!lfShown) {
-      [].forEach.call(document.querySelectorAll(".lf-strip"), function (st) {
-        if (!!st.closest(".home") === (PAGE === "home")) st.hidden = false;
-      });
-    }
+    // on the chooser, if every space is sold, LobbyForge keeps a one-line
+    // strip; a tool page has no room left for one
+    if (!lf && PAGE === "home") document.querySelector(".home .lf-strip").hidden = false;
 
     [].forEach.call(document.querySelectorAll(".lf-link"), function (a) {
       a.href = cfg.lobbyforgeUrl +

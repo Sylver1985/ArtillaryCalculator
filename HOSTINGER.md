@@ -1,5 +1,9 @@
 # Hosting the calculator on Hostinger
 
+> **Not in use.** Wardogs FireGrid runs on Fly.io at `wardogsfiregrid.com`
+> ([DEPLOY.md](DEPLOY.md)). This guide is kept as an alternative; its
+> examples predate the move to that domain.
+
 The site is four plain files, so any Hostinger **web hosting** (or cloud
 hosting) plan can serve it; nothing needs installing. If you only have the
 domain at Hostinger and no hosting plan, either add a web hosting plan or

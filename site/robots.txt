@@ -1,2 +1,5 @@
+# Wardogs FireGrid: everything here is public and may be indexed.
 User-agent: *
 Allow: /
+
+Sitemap: https://wardogsfiregrid.com/sitemap.xml

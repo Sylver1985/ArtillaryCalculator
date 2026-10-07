@@ -1,6 +1,6 @@
 # Redeploys to Fly.io whenever main changes (or on demand from the Actions
-# tab). It does nothing until a FLY_API_TOKEN repository secret exists —
-# DEPLOY.md, "Automatic deploys", has the two commands to set one up.
+# tab). It does nothing until a FLY_API_TOKEN repository secret exists:
+# DEPLOY.md, step 6, "Turn on automatic deploys".
 name: Deploy to Fly.io
 
 on:
@@ -29,3 +29,22 @@ jobs:
       - name: Deploy
         if: env.FLY_API_TOKEN != ''
         run: flyctl deploy --remote-only
+
+      # Tell Bing and the other IndexNow engines (Yandex, Seznam, Naver; Bing
+      # also feeds DuckDuckGo and Yahoo) the pages changed, so they recrawl
+      # within hours. The key file it names is site/92178755fb1399f77e4b3d27edccee6c.txt.
+      # Google doesn't take IndexNow: it reads the sitemap (SITE.md).
+      - name: Notify search engines (IndexNow)
+        if: env.FLY_API_TOKEN != ''
+        continue-on-error: true
+        run: |
+          curl -sS --max-time 30 -o /dev/null -w "IndexNow: HTTP %{http_code}\n" \
+            -X POST https://api.indexnow.org/indexnow \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d '{"host": "wardogsfiregrid.com",
+                 "key": "92178755fb1399f77e4b3d27edccee6c",
+                 "keyLocation": "https://wardogsfiregrid.com/92178755fb1399f77e4b3d27edccee6c.txt",
+                 "urlList": ["https://wardogsfiregrid.com/",
+                             "https://wardogsfiregrid.com/l81",
+                             "https://wardogsfiregrid.com/sph2",
+                             "https://wardogsfiregrid.com/guide"]}'
