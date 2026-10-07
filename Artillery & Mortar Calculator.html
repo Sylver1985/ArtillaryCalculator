@@ -21,6 +21,10 @@
 
   * { box-sizing: border-box; }
 
+  /* the hidden attribute is only a UA-stylesheet display:none, so any panel
+     with its own display (.lean is a grid) would otherwise ignore it */
+  [hidden] { display: none !important; }
+
   /* the fallback colour lives on html only: an opaque background on body
      would paint over the fixed z-index:-1 banner behind it */
   html { background: var(--bg); }
@@ -62,14 +66,27 @@
     -webkit-backdrop-filter: blur(3px);
   }
 
+  /* phones and narrow windows: one column. The three .col wrappers are only
+     for the desktop grid, so here they dissolve and `order` puts the panels
+     back in reading order: inputs, platform, solution, counter-battery, then
+     the buttons and notes last. Panels carry no vertical margins of their
+     own — flex and grid gaps don't collapse margins, so gaps do the spacing. */
   .app {
     width: 100%;
     max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
+  .col { display: contents; }
+  .lean { order: 1; }
+  .readout, .visuals, .working, .adj { order: 2; }
+  .cb { order: 3; }
+  .actions, .hint { order: 4; }
 
   header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   header h1 {
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
@@ -95,7 +112,6 @@
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 12px 14px 14px;
-    margin-bottom: 10px;
   }
   .pos.target { border-color: #4a3a2a; }
 
@@ -154,7 +170,7 @@
   .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .field input[type=number] { -moz-appearance: textfield; }
 
-  .asl-field { margin-top: 8px; }
+  .fields .asl-field { grid-column: 1 / -1; }   /* own row on phones */
   .asl-field input { font-size: 16px; padding-left: 44px; }
   .asl-field input::placeholder { font-size: 11px; }
 
@@ -169,7 +185,6 @@
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 9px 14px;
-    margin-bottom: 10px;
   }
   .scale > span {
     font-size: 10px;
@@ -193,13 +208,26 @@
   }
   .scale select:focus { border-color: var(--accent-dk); }
 
+  /* targeting mode switch */
+  .seg { display: flex; gap: 6px; flex: 1; max-width: 260px; }
+  .seg button { padding: 6px 8px; font-size: 10.5px; }
+  .seg button[aria-pressed="true"] {
+    border-color: var(--accent-dk);
+    color: var(--accent);
+    background: #1f2a25;
+  }
+  /* Simple: flat-ground answers from the table alone, so the height inputs
+     and counter-battery go, and the tilt panel is hidden from script —
+     which leaves the tools column empty, so it goes too */
+  .app.simple .asl-field, .app.simple .adv-only, .app.simple .col-tools { display: none; }
+  .app.simple .fields { grid-template-columns: 1fr 1fr; }
+
   /* ---------- readout ---------- */
 
   .readout {
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
-    margin-top: 14px;
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
@@ -328,6 +356,7 @@
     margin-left: 5px;
   }
   .elev-box.out .value { font-size: 19px; color: var(--red); }
+  .elev-box.out .value .u { display: none; }    /* "TILT TOO STEEP mil" */
   .elev-box.out .elev-note { color: var(--red); }
 
   /* ---------- visuals ---------- */
@@ -336,7 +365,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-top: 10px;
   }
   .vis {
     background: var(--panel);
@@ -377,7 +405,6 @@
   /* ---------- working ---------- */
 
   .working {
-    margin-top: 10px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -388,18 +415,18 @@
   }
   .working .k { color: var(--text); }
   .working .hl { color: var(--accent); }
+  .working .note { color: var(--amber); }
 
   /* ---------- gun lean (cant) ---------- */
 
   .lean {
-    margin-top: 10px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 12px 14px 10px;
     display: grid;
     grid-template-columns: 1fr 210px;
-    gap: 14px;
+    gap: 10px 14px;
     align-items: center;
   }
   .lean > .tag {
@@ -456,29 +483,34 @@
     line-height: 1.6;
     min-height: 15px;
   }
+  /* beside the sliders, spanning both — they are what it resets */
   .lean-level {
-    margin-top: 9px;
-    width: 100%;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding: 0 12px;
     font-size: 10px;
     letter-spacing: 1.5px;
   }
-  text.lean-lbl { fill: #4b5a52; font-family: "Consolas", monospace; font-size: 9px; text-anchor: middle; }
+  text.lean-lbl { fill: #4b5a52; font-family: "Consolas", monospace; font-size: 8px; text-anchor: middle; }
+  .lean-hull  { fill: none; stroke: #4b5a52; stroke-width: 1.2; }
+  .lean-track { stroke: #3c4a44; stroke-width: 2.5; stroke-dasharray: 2.5 1.5; }
 
   @media (max-width: 460px) {
     .lean { grid-template-columns: 1fr; }
     .lean-read { text-align: center; }
   }
 
-  .lean-guides line { stroke: #2f3b36; stroke-width: 1; }
+  .lean-guides line { stroke: #6f8478; stroke-width: 1.4; }   /* the notches */
 
   .lean-sliders {
     grid-column: 1 / -1;
     display: grid;
-    gap: 7px;
-    margin-top: 4px;
-    padding-top: 11px;
+    grid-template-columns: 1fr auto;
+    gap: 7px 12px;
+    padding-top: 10px;
     border-top: 1px solid var(--line);
   }
+  .lean-slider { grid-column: 1; }
   .lean-slider {
     display: grid;
     grid-template-columns: 44px 1fr 56px;
@@ -545,10 +577,74 @@
     box-shadow: 0 0 0 2px var(--accent);
   }
 
+  /* ---------- adjust from impact ---------- */
+
+  .adj {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 14px 12px;
+  }
+  .adj.on { border-color: var(--accent-dk); }      /* an adjustment is in force */
+  .adj-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .adj-head .tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .adj-btn {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 10px;
+  }
+  .adj-btn[disabled] { opacity: .35; cursor: not-allowed; }
+  .adj-btn[disabled]:hover { border-color: var(--line); color: var(--dim); }
+  /* Fired: mil | bearing (wide) ; Landed: X | Y | ASL */
+  .adj-grid {
+    display: grid;
+    grid-template-columns: 52px 1fr 1fr 1fr;
+    gap: 6px;
+    align-items: center;
+  }
+  #adjBrg { grid-column: span 2; }
+  .adj-k { font-size: 10px; letter-spacing: 1px; color: var(--dim); text-transform: uppercase; }
+  .adj input {
+    width: 100%;
+    min-width: 0;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+    padding: 6px 8px;
+    outline: none;
+  }
+  .adj input:focus { border-color: var(--accent-dk); background: #1f2a25; }
+  .adj input::placeholder { color: #38453f; font-weight: 400; font-size: 11px; }
+  .adj input::-webkit-outer-spin-button,
+  .adj input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .adj input[type=number] { -moz-appearance: textfield; }
+  .adj-out {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 9px;
+  }
+  .adj-msg { flex: 1; font-size: 12px; line-height: 1.5; color: var(--dim); min-height: 18px; }
+  .adj-msg .hl { color: var(--accent); font-weight: 700; }
+
   /* ---------- counter-battery ---------- */
 
   .cb {
-    margin-top: 10px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -575,7 +671,7 @@
   .cb.open .cb-toggle .chev { transform: rotate(180deg); }
   .cb-body { padding: 0 14px 14px; }
   .cb-help {
-    margin: 0 0 11px;
+    margin: 0 0 9px;
     font-size: 11px;
     color: var(--dim);
     line-height: 1.6;
@@ -598,7 +694,7 @@
     font-size: 14px;
     font-weight: 600;
     text-align: right;
-    padding: 8px 9px;
+    padding: 6px 9px;
     outline: none;
   }
   .cb-obs input:focus { border-color: var(--accent-dk); background: #1f2a25; }
@@ -608,16 +704,16 @@
   .cb-obs input[type=number] { -moz-appearance: textfield; }
 
   .cb-out {
-    margin-top: 11px;
-    padding: 11px 12px;
+    margin-top: 10px;
+    padding: 9px 12px;
     background: var(--panel-2);
     border: 1px solid var(--line);
     border-radius: 3px;
     font-size: 12px;
-    line-height: 1.7;
+    line-height: 1.55;
     color: var(--dim);
   }
-  .cb-fix { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .cb-fix { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
   .cb-out.warn { border-color: #6b5a2a; }
   .cb-out.warn .cb-fix { color: var(--amber); }
   .cb-out.bad  { border-color: #6b3a3a; }
@@ -636,7 +732,6 @@
   .actions {
     display: flex;
     gap: 8px;
-    margin-top: 12px;
   }
   button {
     flex: 1;
@@ -657,10 +752,10 @@
 
   .hint {
     text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95);
-    margin-top: 14px;
+    margin-top: 4px;
     font-size: 10.5px;
     color: #4b5a52;
-    line-height: 1.8;
+    line-height: 1.7;
     text-align: center;
   }
   .hint kbd {
@@ -699,7 +794,48 @@
     }
     .range-box { border-radius: 4px 4px 0 0; }
     .scale { flex-direction: column; align-items: stretch; gap: 6px; }
-    .scale select { max-width: none; }
+    .scale select, .seg { max-width: none; }
+  }
+
+  /* ---------- desktop: every tool on one screen ---------- */
+
+  /* inputs | solution | tools. The layout is drawn for a window of about
+     1250×640 and fitToScreen() scales it as a whole (--fit, via zoom) to fill
+     whichever of height or width runs out first — so it fills a 1440p screen
+     and still fits a 1366×768 laptop once the browser takes its share. The
+     two diagrams soak up whatever height is left over. zoom scales the vh in
+     min-height too, hence the division. */
+  @media (min-width: 1100px) {
+    body { padding: 14px 18px; }
+    .app {
+      zoom: var(--fit, 1);
+      max-width: 1480px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 14px;
+      min-height: calc((100vh - 28px) / var(--fit, 1));
+    }
+    /* Simple drops the tools column: the other two keep their widths */
+    .app.simple {
+      max-width: 1000px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    }
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+    header { text-align: left; margin-bottom: 0; }
+    .fields { grid-template-columns: 1fr 1fr 1fr; }
+    .fields .asl-field { grid-column: auto; }
+    .hint { margin-top: auto; text-align: left; }   /* settle at the column foot */
+
+    /* the drawings would size their height off their width; basis 0 and a
+       0-floored row make them take the leftover height instead */
+    .visuals { flex: 1 1 0; min-height: 170px; grid-template-rows: minmax(0, 1fr); }
+    .vis { display: flex; flex-direction: column; min-height: 0; }
+    .vis-svg { flex: 1 1 0; height: auto; min-height: 0; }
   }
 </style>
 </head>
@@ -707,241 +843,291 @@
 
 <div class="app">
 
-  <header>
-    <h1>Artillery &amp; Mortar Calculator</h1>
-    <p>A&sup2; + B&sup2; = C&sup2;</p>
-  </header>
+  <!-- desktop: three columns, one screen. Phones: display:contents flattens
+       the columns and `order` restores the single-column reading order -->
+  <section class="col col-in">
 
-  <div class="scale">
-    <span>Grid scale</span>
-    <select id="scale">
-      <option value="100">1 coord unit = 100 m &nbsp;(Wardogs)</option>
-      <option value="10">1 coord unit = 10 m</option>
-      <option value="1">1 coord unit = 1 m &nbsp;(raw metres)</option>
-      <option value="1000">1 coord unit = 1000 m</option>
-    </select>
-  </div>
+    <header>
+      <h1>Artillery &amp; Mortar Calculator</h1>
+      <p>A&sup2; + B&sup2; = C&sup2;</p>
+    </header>
 
-  <div class="scale">
-    <span>Weapon</span>
-    <select id="weapon">
-      <option value="mortar">L81 Mortar &mdash; 132&ndash;684 m</option>
-      <option value="spgLow">SPH-2 low arc &mdash; 1181&ndash;2629 m</option>
-      <option value="spgHigh">SPH-2 high arc &mdash; 780&ndash;2629 m</option>
-    </select>
-  </div>
-
-  <div class="pos you">
-    <span class="tag">Your position &mdash; gun</span>
-    <div class="fields">
-      <div class="field">
-        <label>X</label>
-        <input id="ax" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
-      </div>
-      <div class="field">
-        <label>Y</label>
-        <input id="ay" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+    <div class="scale">
+      <span>Targeting</span>
+      <div class="seg" role="group" aria-label="Targeting mode">
+        <button type="button" data-mode="simple" aria-pressed="false"
+                title="Flat ground, straight from the firing table">Simple</button>
+        <button type="button" data-mode="advanced" aria-pressed="true"
+                title="Adds target height and gun platform tilt">Advanced</button>
       </div>
     </div>
-    <div class="field asl-field">
-      <label>ASL</label>
-      <input id="gunAsl" type="number" step="any" placeholder="height, optional"
-             autocomplete="off" inputmode="decimal">
-    </div>
-  </div>
 
-  <div class="pos target">
-    <span class="tag">Target position &mdash; enemy</span>
-    <div class="fields">
-      <div class="field">
-        <label>X</label>
-        <input id="bx" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+    <div class="scale">
+      <span>Grid scale</span>
+      <select id="scale">
+        <option value="100">1 coord unit = 100 m &nbsp;(Wardogs)</option>
+        <option value="10">1 coord unit = 10 m</option>
+        <option value="1">1 coord unit = 1 m &nbsp;(raw metres)</option>
+        <option value="1000">1 coord unit = 1000 m</option>
+      </select>
+    </div>
+
+    <div class="scale">
+      <span>Weapon</span>
+      <select id="weapon">
+        <option value="mortar">L81 Mortar &mdash; 132&ndash;684 m</option>
+        <option value="spgLow">SPH-2 low arc &mdash; 1181&ndash;2629 m</option>
+        <option value="spgHigh">SPH-2 high arc &mdash; 780&ndash;2629 m</option>
+      </select>
+    </div>
+
+    <div class="pos you">
+      <span class="tag">Your position &mdash; gun</span>
+      <div class="fields">
+        <div class="field">
+          <label>X</label>
+          <input id="ax" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Y</label>
+          <input id="ay" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+        </div>
+        <div class="field asl-field">
+          <label>ASL</label>
+          <input id="gunAsl" type="number" step="any" placeholder="0"
+                 autocomplete="off" inputmode="decimal">
+        </div>
       </div>
-      <div class="field">
-        <label>Y</label>
-        <input id="by" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+    </div>
+
+    <div class="pos target">
+      <span class="tag">Target position &mdash; enemy</span>
+      <div class="fields">
+        <div class="field">
+          <label>X</label>
+          <input id="bx" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Y</label>
+          <input id="by" type="number" step="any" placeholder="0" autocomplete="off" inputmode="decimal">
+        </div>
+        <div class="field asl-field">
+          <label>ASL</label>
+          <input id="tgtAsl" type="number" step="any" placeholder="0"
+                 autocomplete="off" inputmode="decimal">
+        </div>
       </div>
     </div>
-    <div class="field asl-field">
-      <label>ASL</label>
-      <input id="tgtAsl" type="number" step="any" placeholder="height, optional"
-             autocomplete="off" inputmode="decimal">
+
+    <div class="actions">
+      <button id="newTarget">New target</button>
+      <button id="clearAll">Clear all</button>
     </div>
-  </div>
 
-  <div class="lean" id="leanPanel">
-    <span class="tag">Gun platform &mdash; drag to match the in-game indicator</span>
-    <svg viewBox="0 0 220 112" class="lean-svg" id="leanSvg">
-      <g id="leanGuides" class="lean-guides"></g>
+    <div class="hint">
+      <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
+      <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
+      <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
+      <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
+      Gun position, grid scale, weapon and mode are remembered.
+    </div>
 
-      <!-- centre reference: the gun itself -->
-      <line x1="110" y1="48" x2="110" y2="64" stroke="#3c4a44" stroke-width="1"/>
-      <circle cx="110" cy="56" r="2.5" fill="none" stroke="#6f8478" stroke-width="1.2"/>
+  </section>
 
-      <!-- HORIZON: two segments either side of centre, tilting with ROLL -->
-      <g id="leanHorizon">
-        <line x1="62" y1="56" x2="94"  y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="126" y1="56" x2="158" y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
-      </g>
+  <section class="col col-out">
 
-      <!-- PITCH: inward arrows riding the outer ladders -->
-      <g id="leanArrows">
-        <path d="M32 50 L44 56 L32 62 Z" fill="#7dd87d"/>
-        <path d="M188 50 L176 56 L188 62 Z" fill="#7dd87d"/>
-      </g>
-
-      <text x="110" y="105" class="lean-lbl">drag &#8596; roll &nbsp;&middot;&nbsp; &#8597; pitch</text>
-    </svg>
-    <div class="lean-read">
-      <div class="lean-row">
-        <span class="lean-k">Roll</span>
-        <span class="lean-v" id="leanRollVal">0.0&deg;</span>
-        <span class="lean-s" id="leanRollSide">level</span>
+    <div class="readout">
+      <div class="range-box" id="rangeBox" title="Click to copy range in metres">
+        <span class="tag">Range</span>
+        <div class="value"><span id="range">&mdash;</span><span class="unit">m</span></div>
+        <div class="exact" id="exact"></div>
       </div>
-      <div class="lean-row">
-        <span class="lean-k">Pitch</span>
-        <span class="lean-v" id="leanPitchVal">0.0&deg;</span>
-        <span class="lean-s" id="leanPitchSide">level</span>
+      <div class="bearing-box" id="bearingBox" title="Click to copy bearing in degrees">
+        <span class="tag">Bearing &mdash; direction</span>
+        <div class="value"><span id="bearing">&mdash;</span><span class="u">&deg;</span></div>
+        <div class="exact" id="degNote"></div>
       </div>
-      <div class="lean-row hull">
-        <span class="lean-k">Hull faces</span>
-        <input id="hullDeg" type="number" step="any" placeholder="same as gun"
-               inputmode="decimal" autocomplete="off">
+      <div class="elev-box" id="elevBox" title="Click to copy azimuth (elevation) in mils">
+        <div class="elev-left">
+          <span class="tag">Azimuth &mdash; elevation</span>
+          <div class="elev-note" id="elevNote"></div>
+        </div>
+        <div class="value"><span id="elev">&mdash;</span><span class="u">mil</span></div>
       </div>
-      <div class="lean-fix" id="leanFix"></div>
-      <button class="lean-level" id="leanReset" type="button">Set level</button>
     </div>
 
-    <div class="lean-sliders">
-      <label class="lean-slider">
-        <span class="lean-sk">Roll</span>
-        <input type="range" id="rollRange" step="0.1" value="0"
-               aria-label="Roll: hull leaning left or right">
-        <output id="rollOut">0.0&deg;</output>
-      </label>
-      <label class="lean-slider">
-        <span class="lean-sk">Pitch</span>
-        <input type="range" id="pitchRange" step="0.1" value="0"
-               aria-label="Pitch: hull leaning forward or back">
-        <output id="pitchOut">0.0&deg;</output>
-      </label>
-    </div>
-  </div>
+    <div class="visuals">
+      <div class="vis">
+        <span class="tag">Bearing &mdash; direction</span>
+        <svg viewBox="0 0 120 120" class="vis-svg">
+          <circle cx="60" cy="60" r="47" fill="none" stroke="#2c3a34" stroke-width="1"/>
+          <circle cx="60" cy="60" r="36" fill="none" stroke="#1f2a25" stroke-width="1"/>
+          <line x1="60" y1="8"  x2="60" y2="18" stroke="#6f8478" stroke-width="1.5"/>
+          <line x1="112" y1="60" x2="102" y2="60" stroke="#3c4a44" stroke-width="1.5"/>
+          <line x1="60" y1="112" x2="60" y2="102" stroke="#3c4a44" stroke-width="1.5"/>
+          <line x1="8"  y1="60" x2="18" y2="60" stroke="#3c4a44" stroke-width="1.5"/>
+          <text x="60" y="5"   class="rose n">N</text>
+          <text x="117" y="63" class="rose">E</text>
+          <text x="60" y="120" class="rose">S</text>
+          <text x="3"  y="63"  class="rose">W</text>
+          <g id="needle">
+            <line x1="60" y1="60" x2="60" y2="22" stroke="#f0b23c" stroke-width="3" stroke-linecap="round"/>
+            <path d="M60 13 L65.5 25 L54.5 25 Z" fill="#f0b23c"/>
+          </g>
+          <circle cx="60" cy="60" r="3.5" fill="#151b19" stroke="#f0b23c" stroke-width="2"/>
+        </svg>
+        <div class="vis-cap" id="visDir">&mdash;</div>
+      </div>
 
-  <div class="readout">
-    <div class="range-box" id="rangeBox" title="Click to copy range in metres">
-      <span class="tag">Range</span>
-      <div class="value"><span id="range">&mdash;</span><span class="unit">m</span></div>
-      <div class="exact" id="exact"></div>
-    </div>
-    <div class="bearing-box" id="bearingBox" title="Click to copy bearing in degrees">
-      <span class="tag">Bearing &mdash; direction</span>
-      <div class="value"><span id="bearing">&mdash;</span><span class="u">&deg;</span></div>
-      <div class="exact" id="degNote"></div>
-    </div>
-    <div class="elev-box" id="elevBox" title="Click to copy azimuth (elevation) in mils">
-      <div class="elev-left">
+      <div class="vis">
         <span class="tag">Azimuth &mdash; elevation</span>
-        <div class="elev-note" id="elevNote"></div>
+        <svg viewBox="0 0 190 120" class="vis-svg">
+          <line x1="10" y1="100" x2="180" y2="100" stroke="#2c3a34" stroke-width="1.5"/>
+          <path id="traj" d="" fill="none" stroke="#3f7a45" stroke-width="1.5"
+                stroke-dasharray="4 3" opacity="0.85"/>
+          <path id="angArc" d="" fill="none" stroke="#3c4a44" stroke-width="1"/>
+          <line id="barrel" x1="26" y1="100" x2="60" y2="100"
+                stroke="#f0b23c" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="26" cy="100" r="4" fill="#151b19" stroke="#f0b23c" stroke-width="2"/>
+          <g id="tgt">
+            <line x1="172" y1="94" x2="180" y2="102" stroke="#e06666" stroke-width="2"/>
+            <line x1="180" y1="94" x2="172" y2="102" stroke="#e06666" stroke-width="2"/>
+          </g>
+          <text id="angTxt" x="10" y="16" class="rose ang"></text>
+        </svg>
+        <div class="vis-cap" id="visElev">&mdash;</div>
       </div>
-      <div class="value"><span id="elev">&mdash;</span><span class="u">mil</span></div>
     </div>
-  </div>
 
-  <div class="visuals">
-    <div class="vis">
-      <span class="tag">Bearing &mdash; direction</span>
-      <svg viewBox="0 0 120 120" class="vis-svg">
-        <circle cx="60" cy="60" r="47" fill="none" stroke="#2c3a34" stroke-width="1"/>
-        <circle cx="60" cy="60" r="36" fill="none" stroke="#1f2a25" stroke-width="1"/>
-        <line x1="60" y1="8"  x2="60" y2="18" stroke="#6f8478" stroke-width="1.5"/>
-        <line x1="112" y1="60" x2="102" y2="60" stroke="#3c4a44" stroke-width="1.5"/>
-        <line x1="60" y1="112" x2="60" y2="102" stroke="#3c4a44" stroke-width="1.5"/>
-        <line x1="8"  y1="60" x2="18" y2="60" stroke="#3c4a44" stroke-width="1.5"/>
-        <text x="60" y="5"   class="rose n">N</text>
-        <text x="117" y="63" class="rose">E</text>
-        <text x="60" y="120" class="rose">S</text>
-        <text x="3"  y="63"  class="rose">W</text>
-        <g id="needle">
-          <line x1="60" y1="60" x2="60" y2="22" stroke="#f0b23c" stroke-width="3" stroke-linecap="round"/>
-          <path d="M60 13 L65.5 25 L54.5 25 Z" fill="#f0b23c"/>
+    <div class="working" id="working">
+      Enter all four coordinates to calculate.
+    </div>
+
+  </section>
+
+  <section class="col col-tools">
+
+    <div class="lean" id="leanPanel">
+      <span class="tag">Gun platform &mdash; drag to match the in-game indicator</span>
+      <!-- laid out like the SPH-2's own gauge, measured off a gunner-view
+           screenshot: a ladder of three notches either side of level, the
+           pitch arrows riding just outside it, and a roll marker either side
+           of the hull. Same proportions, so it can be matched by eye. -->
+      <svg viewBox="38 0 144 112" class="lean-svg" id="leanSvg">
+        <title>Drag across for roll, up and down for pitch</title>
+        <g id="leanGuides" class="lean-guides"></g>
+
+        <!-- the hull from above, tracks either side -->
+        <rect x="92" y="32" width="36" height="58" rx="3" class="lean-hull"/>
+        <line x1="97"  y1="36" x2="97"  y2="86" class="lean-track"/>
+        <line x1="123" y1="36" x2="123" y2="86" class="lean-track"/>
+
+        <!-- ROLL: a marker each side of the hull, moving opposite ways -->
+        <line id="leanRollL" x1="64"  y1="56" x2="77"  y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
+        <line id="leanRollR" x1="143" y1="56" x2="156" y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- PITCH: inward arrows riding outside the ladders -->
+        <g id="leanArrows">
+          <path d="M40 52 L47 56 L40 60 Z" fill="#7dd87d"/>
+          <path d="M180 52 L173 56 L180 60 Z" fill="#7dd87d"/>
         </g>
-        <circle cx="60" cy="60" r="3.5" fill="#151b19" stroke="#f0b23c" stroke-width="2"/>
+
+        <text id="leanLbl" x="110" y="107" class="lean-lbl"></text>
       </svg>
-      <div class="vis-cap" id="visDir">&mdash;</div>
-    </div>
-
-    <div class="vis">
-      <span class="tag">Azimuth &mdash; elevation</span>
-      <svg viewBox="0 0 190 120" class="vis-svg">
-        <line x1="10" y1="100" x2="180" y2="100" stroke="#2c3a34" stroke-width="1.5"/>
-        <path id="traj" d="" fill="none" stroke="#3f7a45" stroke-width="1.5"
-              stroke-dasharray="4 3" opacity="0.85"/>
-        <path id="angArc" d="" fill="none" stroke="#3c4a44" stroke-width="1"/>
-        <line id="barrel" x1="26" y1="100" x2="60" y2="100"
-              stroke="#f0b23c" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="26" cy="100" r="4" fill="#151b19" stroke="#f0b23c" stroke-width="2"/>
-        <g id="tgt">
-          <line x1="172" y1="94" x2="180" y2="102" stroke="#e06666" stroke-width="2"/>
-          <line x1="180" y1="94" x2="172" y2="102" stroke="#e06666" stroke-width="2"/>
-        </g>
-        <text id="angTxt" x="10" y="16" class="rose ang"></text>
-      </svg>
-      <div class="vis-cap" id="visElev">&mdash;</div>
-    </div>
-  </div>
-
-  <div class="working" id="working">
-    Enter all four coordinates to calculate.
-  </div>
-
-  <div class="cb" id="cbPanel">
-    <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
-      <span>Counter-battery &mdash; locate enemy gun</span><span class="chev">&#9662;</span>
-    </button>
-    <div class="cb-body" id="cbBody" hidden>
-      <p class="cb-help">
-        Two observers who can see the same incoming fire. For each, enter where
-        <em>you</em> were and the bearing the rounds came <b>from</b>. Two lines fix
-        the tube; a third checks it. The observers need to be well apart &mdash;
-        the lines must cross at a decent angle.
-      </p>
-
-      <div class="cb-obs">
-        <span class="cb-n">1</span>
-        <input id="o1x" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
-        <input id="o1y" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
-        <input id="o1b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
-      </div>
-      <div class="cb-obs">
-        <span class="cb-n">2</span>
-        <input id="o2x" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
-        <input id="o2y" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
-        <input id="o2b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
-      </div>
-      <div class="cb-obs">
-        <span class="cb-n">3</span>
-        <input id="o3x" type="number" step="any" placeholder="X opt." inputmode="decimal" autocomplete="off">
-        <input id="o3y" type="number" step="any" placeholder="Y opt." inputmode="decimal" autocomplete="off">
-        <input id="o3b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
+      <div class="lean-read">
+        <div class="lean-row">
+          <span class="lean-k">Roll</span>
+          <span class="lean-v" id="leanRollVal">0.0&deg;</span>
+          <span class="lean-s" id="leanRollSide">level</span>
+        </div>
+        <div class="lean-row">
+          <span class="lean-k">Pitch</span>
+          <span class="lean-v" id="leanPitchVal">0.0&deg;</span>
+          <span class="lean-s" id="leanPitchSide">level</span>
+        </div>
+        <div class="lean-row hull">
+          <span class="lean-k">Hull faces</span>
+          <input id="hullDeg" type="number" step="any" placeholder="same as gun"
+                 inputmode="decimal" autocomplete="off">
+        </div>
+        <div class="lean-fix" id="leanFix"></div>
       </div>
 
-      <div class="cb-out" id="cbOut">Enter at least two observations.</div>
-      <button class="cb-use" id="cbUse" type="button" disabled>Use as target</button>
+      <div class="lean-sliders">
+        <label class="lean-slider">
+          <span class="lean-sk">Roll</span>
+          <input type="range" id="rollRange" step="0.1" value="0"
+                 aria-label="Roll: hull leaning left or right">
+          <output id="rollOut">0.0&deg;</output>
+        </label>
+        <label class="lean-slider">
+          <span class="lean-sk">Pitch</span>
+          <input type="range" id="pitchRange" step="0.1" value="0"
+                 aria-label="Pitch: hull leaning forward or back">
+          <output id="pitchOut">0.0&deg;</output>
+        </label>
+        <button class="lean-level" id="leanReset" type="button">Set level</button>
+      </div>
     </div>
-  </div>
 
-  <div class="actions">
-    <button id="newTarget">New target</button>
-    <button id="clearAll">Clear all</button>
-  </div>
+    <div class="adj" id="adjPanel">
+      <div class="adj-head">
+        <span class="tag">Adjust from impact</span>
+        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
+      </div>
+      <div class="adj-grid">
+        <span class="adj-k">Fired</span>
+        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
+               title="Mil you fired at — filled from the solution until you change it">
+        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
+               title="Bearing you laid — filled from the solution until you change it">
+        <span class="adj-k">Landed</span>
+        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
+               title="Height where it landed — blank = the target's">
+      </div>
+      <div class="adj-out">
+        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
+        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
+      </div>
+    </div>
 
-  <div class="hint">
-    <kbd>Enter</kbd> next field &nbsp;&middot;&nbsp; <kbd>Esc</kbd> new target &nbsp;&middot;&nbsp; click any readout to copy<br>
-    <b>Bearing</b> = which way to point the gun, degrees clockwise from grid north (+Y).<br>
-    <b>Azimuth</b> = how far to raise the barrel, in mils &mdash; the game's wording.<br>
-    Gun position, grid scale and weapon are remembered between sessions.
-  </div>
+    <div class="cb adv-only" id="cbPanel">
+      <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
+        <span>Counter-battery &mdash; locate enemy gun</span><span class="chev">&#9662;</span>
+      </button>
+      <div class="cb-body" id="cbBody" hidden>
+        <p class="cb-help">
+          Where each observer stood, and the bearing the rounds came <b>from</b>.
+          Two fix the enemy gun; a third checks it.
+        </p>
+
+        <div class="cb-obs">
+          <span class="cb-n">1</span>
+          <input id="o1x" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+          <input id="o1y" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+          <input id="o1b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
+        </div>
+        <div class="cb-obs">
+          <span class="cb-n">2</span>
+          <input id="o2x" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+          <input id="o2y" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+          <input id="o2b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
+        </div>
+        <div class="cb-obs">
+          <span class="cb-n">3</span>
+          <input id="o3x" type="number" step="any" placeholder="X opt." inputmode="decimal" autocomplete="off">
+          <input id="o3y" type="number" step="any" placeholder="Y opt." inputmode="decimal" autocomplete="off">
+          <input id="o3b" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off">
+        </div>
+
+        <div class="cb-out" id="cbOut">Enter at least two observations.</div>
+        <button class="cb-use" id="cbUse" type="button" disabled>Use as target</button>
+      </div>
+    </div>
+
+  </section>
 
 </div>
 
@@ -954,7 +1140,9 @@
   var ax = document.getElementById("ax"),
       ay = document.getElementById("ay"),
       bx = document.getElementById("bx"),
-      by = document.getElementById("by");
+      by = document.getElementById("by"),
+      gunAslEl = document.getElementById("gunAsl"),
+      tgtAslEl = document.getElementById("tgtAsl");
 
   var scaleEl     = document.getElementById("scale"),
       weaponEl    = document.getElementById("weapon"),
@@ -978,7 +1166,9 @@
       workingEl   = document.getElementById("working"),
       toastEl     = document.getElementById("toast");
 
-  var lastRange = null,
+  var lastAdj    = null,      // impact adjustment behind the current solution, if any
+      lastHeight = null,      // height solve behind the current solution, if any
+      lastRange = null,
       lastDeg   = null,
       lastElev  = null;
 
@@ -1007,23 +1197,51 @@
   // Community-measured firing tables from apollyon-sys/wardogs-calculator (MIT).
   // BULKHEAD publishes no official ballistics, so these are player measurements.
   // Each entry is [range in metres, barrel elevation in mils].
+  //
+  // milMin/milMax is the band each table covers; sight is how far the dial
+  // actually turns. They differ for the SPH-2: low and high arc are one gun on
+  // one sight, so a tilt-corrected low-arc shot may dial past 600 mil.
+  var SPH2_SIGHT = { min: 20, max: 1390 };
+
+  // The tables only say how far a shell flies over flat ground. Hitting a
+  // target above or below the gun needs the trajectory's shape, so both SPH-2
+  // tables were fitted with one model: a point mass with quadratic drag, the
+  // launch angle linear in the dial. One set of numbers covers both arcs —
+  // 139 rows, RMS error 0.16 %, worst row 11 m. No model that simple fits the
+  // L81 table (best try 5.7 % off), so the mortar stays uncorrected.
+  //
+  // The model supplies only the SHIFT that height causes — how much sooner a
+  // falling shell meets higher ground than level ground. The range itself
+  // still comes from the table, so with level heights nothing changes.
+  var SPH2_BALLISTICS = {
+    v0:        224.05,      // muzzle velocity, m/s
+    k:         2.8026e-4,   // drag: dv/dt = -k |v| v, per metre
+    deg0:      7.3184,      // launch angle at dial 0, degrees
+    degPerMil: 0.053077     // launch angle per dial mil, degrees
+  };
+
   var WEAPONS = {
     mortar: {
       name: "L81 Mortar",
       min: 132, max: 684,
       milMin: 150, milMax: 850,
+      sight: { min: 150, max: 850 },
       table: [[80,950],[87,940],[93,930],[99,920],[105,910],[110,900],[115,890],[118,880],[122,870],[127,860],[132,850],[140,840],[151,830],[163,820],[175,810],[187,800],[198,790],[208,780],[219,770],[229,760],[239,750],[250,740],[260,730],[270,720],[280,710],[290,700],[300,690],[310,680],[319,670],[329,660],[339,650],[348,640],[358,630],[367,620],[376,610],[385,600],[394,590],[403,580],[412,570],[420,560],[429,550],[437,540],[446,530],[454,520],[462,510],[470,500],[478,490],[486,480],[494,470],[501,460],[509,450],[516,440],[524,430],[531,420],[538,410],[545,400],[552,390],[559,380],[565,370],[572,360],[578,350],[585,340],[591,330],[597,320],[603,310],[609,300],[615,290],[620,280],[626,270],[631,260],[636,250],[641,240],[646,230],[651,220],[656,210],[661,200],[666,190],[670,180],[675,170],[680,160],[684,150],[688,140],[693,130],[697,120]]
     },
     spgLow: {
       name: "SPH-2 low arc",
       min: 1181, max: 2629,
       milMin: 20, milMax: 600,
+      sight: SPH2_SIGHT,
+      ballistics: SPH2_BALLISTICS,
       table: [[1181,20],[1232,30],[1283,40],[1334,50],[1384,60],[1433,70],[1482,80],[1529,90],[1576,100],[1622,110],[1666,120],[1709,130],[1751,140],[1792,150],[1832,160],[1870,170],[1907,180],[1944,190],[1979,200],[2014,210],[2046,220],[2079,230],[2110,240],[2139,250],[2168,260],[2196,270],[2223,280],[2249,290],[2273,300],[2296,310],[2319,320],[2341,330],[2362,340],[2383,350],[2403,360],[2422,370],[2439,380],[2456,390],[2471,400],[2485,410],[2499,420],[2513,430],[2526,440],[2538,450],[2550,460],[2561,470],[2570,480],[2579,490],[2586,500],[2593,510],[2599,520],[2605,530],[2610,540],[2615,550],[2620,560],[2623,570],[2626,580],[2628,590],[2629,600]]
     },
     spgHigh: {
       name: "SPH-2 high arc",
       min: 780, max: 2629,
       milMin: 610, milMax: 1390,
+      sight: SPH2_SIGHT,
+      ballistics: SPH2_BALLISTICS,
       table: [[2629,610],[2629,620],[2628,630],[2626,640],[2624,650],[2621,660],[2617,670],[2613,680],[2609,690],[2604,700],[2599,710],[2592,720],[2584,730],[2576,740],[2567,750],[2557,760],[2546,770],[2536,780],[2524,790],[2513,800],[2501,810],[2488,820],[2474,830],[2460,840],[2444,850],[2429,860],[2412,870],[2395,880],[2378,890],[2360,900],[2342,910],[2323,920],[2303,930],[2282,940],[2261,950],[2239,960],[2217,970],[2194,980],[2171,990],[2147,1000],[2123,1010],[2098,1020],[2072,1030],[2046,1040],[2019,1050],[1991,1060],[1963,1070],[1934,1080],[1905,1090],[1875,1100],[1844,1110],[1813,1120],[1782,1130],[1750,1140],[1717,1150],[1684,1160],[1650,1170],[1616,1180],[1582,1190],[1547,1200],[1512,1210],[1475,1220],[1438,1230],[1401,1240],[1363,1250],[1324,1260],[1285,1270],[1245,1280],[1205,1290],[1165,1300],[1124,1310],[1083,1320],[1041,1330],[999,1340],[956,1350],[913,1360],[869,1370],[825,1380],[780,1390],[735,1400]]
     }
   };
@@ -1043,6 +1261,12 @@
     return null;
   }
 
+  // low arc climbs with range; high arc and mortar come down as range grows
+  function milRisesWithRange(w) {
+    var t = w.table, a = t[0], z = t[t.length - 1];
+    return (z[0] - a[0]) * (z[1] - a[1]) > 0;
+  }
+
   var POINTS = ["N","NNE","NE","ENE","E","ESE","SE","SSE",
                 "S","SSW","SW","WSW","W","WNW","NW","NNW"];
 
@@ -1052,6 +1276,13 @@
     return POINTS[Math.round(deg / 22.5) % 16];
   }
 
+  // wrap into 0..360. A hair west of north is 0, not 360 — same bearing,
+  // conventional form, and it would otherwise print as "360.0"
+  function normBearing(d) {
+    d = ((d % 360) + 360) % 360;
+    return d >= 359.95 ? 0 : d;
+  }
+
   function store(key, val) {
     try { localStorage.setItem(key, val); } catch (e) { /* file:// may block */ }
   }
@@ -1059,10 +1290,177 @@
     try { return localStorage.getItem(key); } catch (e) { return null; }
   }
 
+  // Simple: flat ground, straight from the firing table — the calculator as it
+  // was before target height and platform tilt. Advanced adds both.
+  var mode = "advanced";
+  function advanced() { return mode === "advanced"; }
+
   // ---- the maths --------------------------------------------------------
 
   // Wardogs mils sit on a 6400-mil circle, so 1 mil = 0.05625°.
   var MIL_TO_DEG = 360 / 6400;
+
+  // ---- target height (see SPH2_BALLISTICS) -------------------------------
+
+  var G = 9.81;
+
+  // how much further (+) or shorter (−) a shell fired at dial `mil` comes
+  // down through height dh than through the gun's own level. null when it
+  // never climbs to dh. RK4 with a 0.05 s step, as in the fit.
+  function heightShift(b, mil, dh) {
+    var th = (b.deg0 + b.degPerMil * mil) * Math.PI / 180,
+        k = b.k, h = 0.05,
+        x = 0, y = 0, vx = b.v0 * Math.cos(th), vy = b.v0 * Math.sin(th),
+        x0 = null, xd = null, i,
+        s1, ax1, ay1, vx2, vy2, s2, ax2, ay2, vx3, vy3, s3, ax3, ay3,
+        vx4, vy4, s4, ax4, ay4, nx, ny;
+
+    for (i = 0; i < 4000; i++) {            // 200 s, far past any real flight
+      s1 = k * Math.sqrt(vx * vx + vy * vy);
+      ax1 = -s1 * vx;  ay1 = -G - s1 * vy;
+      vx2 = vx + ax1 * h / 2;  vy2 = vy + ay1 * h / 2;
+      s2 = k * Math.sqrt(vx2 * vx2 + vy2 * vy2);
+      ax2 = -s2 * vx2;  ay2 = -G - s2 * vy2;
+      vx3 = vx + ax2 * h / 2;  vy3 = vy + ay2 * h / 2;
+      s3 = k * Math.sqrt(vx3 * vx3 + vy3 * vy3);
+      ax3 = -s3 * vx3;  ay3 = -G - s3 * vy3;
+      vx4 = vx + ax3 * h;  vy4 = vy + ay3 * h;
+      s4 = k * Math.sqrt(vx4 * vx4 + vy4 * vy4);
+      ax4 = -s4 * vx4;  ay4 = -G - s4 * vy4;
+
+      nx = x + h / 6 * (vx + 2 * vx2 + 2 * vx3 + vx4);
+      ny = y + h / 6 * (vy + 2 * vy2 + 2 * vy3 + vy4);
+
+      // crossings only count on the way down, coming from above
+      if (y > 0  && ny <= 0  && x0 === null) x0 = x + y / (y - ny) * (nx - x);
+      if (y > dh && ny <= dh && xd === null) xd = x + (y - dh) / (y - ny) * (nx - x);
+      if (x0 !== null && xd !== null) return xd - x0;
+      if (x0 !== null && ny < dh) return null;      // fell past without reaching it
+
+      vx += h / 6 * (ax1 + 2 * ax2 + 2 * ax3 + ax4);
+      vy += h / 6 * (ay1 + 2 * ay2 + 2 * ay3 + ay4);
+      x = nx; y = ny;
+    }
+    return null;
+  }
+
+  // the table read backwards: flat range for a dial setting
+  function rangeAtMil(w, m) {
+    var t = w.table, i, m0, m1;
+    for (i = 0; i < t.length - 1; i++) {
+      m0 = t[i][1]; m1 = t[i + 1][1];
+      if (m >= Math.min(m0, m1) && m <= Math.max(m0, m1)) {
+        if (m1 === m0) return t[i][0];
+        return t[i][0] + (m - m0) / (m1 - m0) * (t[i + 1][0] - t[i][0]);
+      }
+    }
+    return null;
+  }
+
+  // Dial setting that lands on a target dh above the gun (below if negative)
+  // at horizontal range r: the mil whose table range plus height shift comes
+  // to exactly r. Each arc is scanned from its own end — up from the flat end
+  // on the low arc, down from the steep end on the high — so an uphill shot
+  // near maximum range can't pick up the other arc's root.
+  //   -> { mil, flat }  flat = the level-ground range it is laid as
+  //   -> { mil: null, tooFar }
+  // a few answers kept: the target and an impact get solved turn about
+  var heightMemo = {}, heightMemoSize = 0;
+
+  function heightSolve(w, r, dh) {
+    var key = w.name + "|" + r + "|" + dh;
+    if (heightMemo.hasOwnProperty(key)) return heightMemo[key];
+
+    function miss(m) {                  // > 0 overshoots, < 0 falls short
+      var s = heightShift(w.ballistics, m, dh), rt = rangeAtMil(w, m);
+      return (s === null || rt === null) ? -Infinity : rt + s - r;
+    }
+
+    var up = milRisesWithRange(w),
+        m  = up ? w.milMin : w.milMax,
+        dir = up ? 10 : -10,
+        f  = miss(m), pm, pf, lo, hi, flo, mid, fm, i, val = null,
+        allShort = f < 0;
+
+    for (;;) {
+      pm = m; pf = f;
+      m += dir;
+      if (up ? m > w.milMax : m < w.milMin) break;
+      f = miss(m);
+      if (f >= 0) allShort = false;
+      if ((pf < 0) !== (f < 0)) {                   // bracketed: bisect it
+        lo = pm; flo = pf; hi = m;
+        for (i = 0; i < 16; i++) {
+          mid = (lo + hi) / 2; fm = miss(mid);
+          if ((fm < 0) === (flo < 0)) { lo = mid; flo = fm; } else { hi = mid; }
+        }
+        mid = (lo + hi) / 2;
+        val = { mil: mid, flat: rangeAtMil(w, mid) };
+        break;
+      }
+    }
+    if (!val) val = { mil: null, tooFar: allShort };
+
+    if (++heightMemoSize > 40) { heightMemo = {}; heightMemoSize = 1; }
+    heightMemo[key] = val;
+    return val;
+  }
+
+  // target height relative to the gun. A blank ASL counts as 0, so a gun
+  // height on its own still corrects; null when both are blank, or in Simple
+  function heightDiff() {
+    if (!advanced()) return null;
+    var h1 = num(gunAslEl), h2 = num(tgtAslEl);
+    if (h1 === null && h2 === null) return null;
+    return (h2 || 0) - (h1 || 0);
+  }
+
+  // the dial a LEVEL platform needs to land at range r, dh above the gun:
+  // the table, plus the height solve where the weapon has a model. null when
+  // out of reach. The tilt-free core of showElevation, shared with the
+  // impact adjustment.
+  function levelMil(w, r, dh) {
+    if (dh !== null && dh !== 0 && w.ballistics) return heightSolve(w, r, dh).mil;
+    if (r < w.min || r > w.max) return null;
+    return elevationFor(w, r);
+  }
+
+  // ---- adjust from impact -----------------------------------------------
+  //
+  // Where a round actually lands says what the platform did to it. Fired at
+  // dial M and bearing B, it came down where a level gun would need dial M0
+  // and bearing B0: so from this spot the platform adds (M - M0) mil and
+  // (B - B0)°, whatever the tilt and however the gauge was read. The next
+  // solution is the target's level one plus those two offsets. Each applied
+  // impact replaces the last, so firing the adjusted data and logging that
+  // impact refines it.
+  //
+  // It is only good for the spot it was measured from: moving the gun or
+  // changing weapon drops it, and a target more than ADJ_SPAN_DEG or
+  // ADJ_SPAN_RANGE away from the impact doesn't get it.
+  var adj = null,             // { dM, dB, range, bearing, weapon, gun }
+      adjFar = false,         // set when adj exists but this target is outside its span
+      ADJ_SPAN_DEG = 20, ADJ_SPAN_RANGE = 0.3;
+
+  function gunKey() {
+    return [ax.value, ay.value, gunAslEl.value, scaleEl.value].join("|");
+  }
+
+  // the adjustment to use for a target at range r, bearing deg — or null
+  function activeAdj(r, deg) {
+    adjFar = false;
+    if (!adj || !advanced()) return null;
+    if (adj.weapon !== weaponEl.value || adj.gun !== gunKey()) {   // moved: start over
+      adj = null;
+      return null;
+    }
+    var dB = Math.abs(((deg - adj.bearing) % 360 + 540) % 360 - 180);
+    if (dB > ADJ_SPAN_DEG || Math.abs(r / adj.range - 1) > ADJ_SPAN_RANGE) {
+      adjFar = true;
+      return null;
+    }
+    return adj;
+  }
 
   var GUN_X = 26, GROUND_Y = 100, TGT_X = 176, BARREL_LEN = 40;
 
@@ -1116,6 +1514,13 @@
     var w = WEAPONS[weaponEl.value] || WEAPONS.mortar,
         envelope = w.name + " &middot; " + fmt(w.min, 0) + "&ndash;" + fmt(w.max, 0) + " m";
 
+    // the lean correction belongs to this solution only: every early return
+    // below must leave none behind for calc() to lay off the bearing with
+    cantAzOffset = 0;
+    leanFixEl.innerHTML = "";
+    lastHeight = null;
+    lastAdj = null;
+
     if (r === null) {
       lastElev = null;
       elevBoxEl.classList.remove("out");
@@ -1126,69 +1531,113 @@
       return;
     }
 
-    if (r < w.min || r > w.max) {
-      lastElev = null;
-      elevBoxEl.classList.add("out");
-      elevEl.textContent = "OUT OF RANGE";
-      elevNoteEl.innerHTML = envelope + " &mdash; target is " +
-        fmt(Math.round(r < w.min ? w.min - r : r - w.max), 0) + " m " +
-        (r < w.min ? "too close" : "too far");
-      drawElevation(null);
-      visElevEl.textContent = "out of range";
-      return;
+    var dh = heightDiff(), mil;
+
+    // with both heights in and a fitted model, the height solve replaces the
+    // flat envelope: downhill reaches past the table's limit, uphill falls short
+    if (dh !== null && dh !== 0 && w.ballistics) {
+      lastHeight = heightSolve(w, r, dh);
+      if (lastHeight.mil === null) {
+        lastElev = null;
+        elevBoxEl.classList.add("out");
+        elevEl.textContent = "OUT OF RANGE";
+        elevNoteEl.innerHTML = envelope + " &mdash; " +
+          (lastHeight.tooFar ? "too far" : "too close") + " with the target " +
+          fmtS(Math.abs(dh)) + " m " + (dh > 0 ? "above" : "below") + " the gun";
+        drawElevation(null);
+        visElevEl.textContent = "out of range";
+        return;
+      }
+      mil = lastHeight.mil;
+    } else {
+      if (r < w.min || r > w.max) {
+        lastElev = null;
+        elevBoxEl.classList.add("out");
+        elevEl.textContent = "OUT OF RANGE";
+        elevNoteEl.innerHTML = envelope + " &mdash; target is " +
+          fmt(Math.round(r < w.min ? w.min - r : r - w.max), 0) + " m " +
+          (r < w.min ? "too close" : "too far");
+        drawElevation(null);
+        visElevEl.textContent = "out of range";
+        return;
+      }
+
+      mil = elevationFor(w, r);
+      if (mil === null) {           // inside the envelope but off the table
+        lastElev = null;
+        elevBoxEl.classList.add("out");
+        elevEl.textContent = "NO SOLUTION";
+        elevNoteEl.innerHTML = envelope;
+        drawElevation(null);
+        visElevEl.textContent = "no solution";
+        return;
+      }
     }
 
-    var mil = elevationFor(w, r);
-    if (mil === null) {           // inside the envelope but off the table
-      lastElev = null;
-      elevBoxEl.classList.add("out");
-      elevEl.textContent = "NO SOLUTION";
-      elevNoteEl.innerHTML = envelope;
-      drawElevation(null);
-      visElevEl.textContent = "no solution";
-      return;
-    }
+    // an impact logged from this spot measures what the platform does, so
+    // where one applies it stands in for the tilt model entirely
+    var a = lastAdj = activeAdj(r, bearingDeg);
 
     // --- platform tilt correction ----------------------------------------
     var tilt   = boreTilt(bearingDeg),
         phi    = tilt.cant,
         eTable = mil * MIL_TO_DEG * Math.PI / 180,
         eWant  = eTable - tilt.along,   // the slope already gives you `along`
-        milSet = mil,
+        milSet = a ? mil + a.dM : mil,
         leanMsg = "";
 
-    cantAzOffset = 0;
+    if (a) {
+      if (Math.round(milSet) < w.sight.min || Math.round(milSet) > w.sight.max) {
+        lastElev = null;
+        elevBoxEl.classList.add("out");
+        elevEl.textContent = "OUT OF RANGE";
+        elevNoteEl.innerHTML = envelope + " &mdash; adjusted from impact, the shot needs " +
+          fmt(Math.round(milSet), 0) + " mil, outside the " + fmt(w.sight.min, 0) +
+          "&ndash;" + fmt(w.sight.max, 0) + " mil sight";
+        drawElevation(null);
+        visElevEl.textContent = "out of range";
+        return;
+      }
+      cantAzOffset = -a.dB;             // calc() lays off deg - cantAzOffset
+    }
 
-    if (tiltApplies() && (Math.abs(rollDeg) >= 0.05 || Math.abs(pitchDeg) >= 0.05)) {
-      if (eWant <= 0) {
+    if (!a && tiltApplies() && (Math.abs(rollDeg) >= 0.05 || Math.abs(pitchDeg) >= 0.05)) {
+      var sinSet = Math.sin(eWant) / Math.cos(phi),
+          milTry = eWant <= 0 ? -Infinity
+                 : sinSet < 1 ? Math.asin(sinSet) / MIL_TO_DEG * 180 / Math.PI
+                 : Infinity,
+          dial   = Math.round(milTry);       // what the readout would show
+
+      // the dial only turns so far either way. Under its floor the slope is
+      // already lifting the barrel more than this range wants
+      if (dial < w.sight.min) {
         lastElev = null;
         elevBoxEl.classList.add("out");
         elevEl.textContent = "NOSE TOO HIGH";
-        elevNoteEl.innerHTML = envelope + " &mdash; the platform already points " +
-          "above the elevation this range needs. Level the platform.";
+        elevNoteEl.innerHTML = envelope + " &mdash; " +
+          (eWant <= 0 ? "the platform already points above the elevation this range needs"
+                      : "at this tilt the shot needs " + fmt(dial, 0) + " mil, below the " +
+                        fmt(w.sight.min, 0) + " mil sight limit") +
+          ". Level the platform.";
         drawElevation(null);
         visElevEl.textContent = "no solution at this tilt";
         leanFixEl.innerHTML = "no solution at this tilt";
         return;
       }
 
-      var sinSet = Math.sin(eWant) / Math.cos(phi),
-          milTry = sinSet < 1
-            ? Math.asin(sinSet) / MIL_TO_DEG * 180 / Math.PI
-            : Infinity;
-
-      // two separate ways this can fail: the barrel would need to pass
-      // vertical, or it simply runs out of sight before it gets there
-      if (sinSet >= 1 || milTry > w.milMax) {
-        // the tilt eats more elevation than the barrel has left
+      // over the top: the barrel would need to pass vertical, or it simply
+      // runs out of sight before it gets there
+      if (dial > w.sight.max) {
         lastElev = null;
         elevBoxEl.classList.add("out");
         elevEl.textContent = "TILT TOO STEEP";
         elevNoteEl.innerHTML = envelope + " &mdash; at this tilt the shot needs " +
           (sinSet >= 1 ? "more than the barrel can reach"
-                       : fmt(Math.round(milTry), 0) + " mil, past the " +
-                         fmt(w.milMax, 0) + " mil sight limit") +
-          ". Level the platform or move closer.";
+                       : fmt(dial, 0) + " mil, past the " +
+                         fmt(w.sight.max, 0) + " mil sight limit") +
+          // less elevation means closer on the low arc but further on the high
+          ". Level the platform or move " +
+          (milRisesWithRange(w) ? "closer" : "further back") + ".";
         drawElevation(null);
         visElevEl.textContent = "tilt too steep";
         leanFixEl.innerHTML = "no solution at this tilt";
@@ -1212,7 +1661,14 @@
     lastElev = milSet;
     elevBoxEl.classList.remove("out");
     elevEl.textContent = String(Math.round(milSet));
-    elevNoteEl.innerHTML = envelope + (leanMsg ? " &mdash; corrected for platform tilt" : "");
+    if (a && tiltApplies()) leanFixEl.innerHTML = "not used &mdash; adjusted from impact";
+
+    var fixes = [];
+    if (lastHeight) fixes.push("height");
+    if (leanMsg)    fixes.push("platform tilt");
+    elevNoteEl.innerHTML = envelope +
+      (fixes.length ? " &mdash; corrected for " + fixes.join(" and ") : "") +
+      (a ? (fixes.length ? ", " : " &mdash; ") + "adjusted from impact" : "");
 
     var degs = milSet * MIL_TO_DEG;
     drawElevation(degs);
@@ -1220,6 +1676,11 @@
   }
 
   function calc() {
+    solve();
+    adjUpdate();
+  }
+
+  function solve() {
     var x1 = num(ax), y1 = num(ay),
         x2 = num(bx), y2 = num(by);
 
@@ -1231,8 +1692,6 @@
     if (x1 === null || y1 === null || x2 === null || y2 === null) {
       lastRange = null;
       lastDeg = null;
-      cantAzOffset = 0;
-      leanFixEl.innerHTML = "";
       showElevation(null, null);
       rangeEl.textContent = "—";
       exactEl.textContent = "";
@@ -1259,10 +1718,7 @@
     exactEl.textContent = "exact " + fmt(c, 2) + " m";
 
     // bearing: clockwise from grid north (+Y)
-    var deg = Math.atan2(a, b) * 180 / Math.PI;
-    if (deg < 0) deg += 360;
-    // a hair west of north is 0, not 360 — same bearing, conventional form
-    if (deg >= 359.95) deg = 0;
+    var deg = normBearing(Math.atan2(a, b) * 180 / Math.PI);
 
     showElevation(c, deg);
 
@@ -1276,18 +1732,13 @@
     }
 
     // cant swings the muzzle toward the low side, so lay off the other way
-    var degAim = deg;
-    if (cantAzOffset) {
-      degAim = deg - cantAzOffset;
-      if (degAim < 0) degAim += 360;
-      if (degAim >= 360) degAim -= 360;
-    }
+    var degAim = cantAzOffset ? normBearing(deg - cantAzOffset) : deg;
 
     lastDeg = degAim;
 
     bearingEl.textContent = fmt(degAim, 1);
-    degNoteEl.textContent = compassPoint(degAim) +
-      (cantAzOffset ? "  — lean-corrected from " + fmt(deg, 1) + "°" : "");
+    degNoteEl.textContent = compassPoint(degAim) + (!cantAzOffset ? "" :
+      (lastAdj ? "  — impact-adjusted from " : "  — lean-corrected from ") + fmt(deg, 1) + "°");
     needleEl.style.transform = "rotate(" + degAim + "deg)";
     visDirEl.innerHTML = fmt(degAim, 1) + "&deg; &nbsp;" + compassPoint(degAim);
 
@@ -1299,7 +1750,37 @@
       '<span class="k">B</span> = (' + fmtS(y2) + ' &minus; ' + fmtS(y1) + ')' + mul +
         ' = ' + fmtS(b) + ' m &nbsp;(north/south)<br>' +
       '<span class="k">C</span> = &radic;(' + fmtS(a * a) + ' + ' + fmtS(b * b) + ') = ' +
-      '<span class="hl">' + fmt(c, 2) + ' m</span>';
+      '<span class="hl">' + fmt(c, 2) + ' m</span>' + heightLine();
+  }
+
+  // On the SPH-2 the height is in the solution, and this line shows the
+  // level-ground range it was laid as. The L81 has no ballistic fit, so there
+  // it stays uncorrected — but which WAY the round errs is safe to say: a
+  // falling shell meets higher ground before it has flown the full range, and
+  // lower ground after.
+  function heightLine() {
+    var dh = heightDiff();
+    if (dh === null) return "";
+
+    var w = WEAPONS[weaponEl.value] || WEAPONS.mortar,
+        h1 = num(gunAslEl), h2 = num(tgtAslEl),
+        blank = h1 === null ? "gun" : h2 === null ? "target" : "",
+        line = '<br><span class="k">H</span> = ' + fmtS(h2 || 0) + ' &minus; ' +
+               fmtS(h1 || 0) + ' = ' + (dh > 0 ? "+" : "") + fmtS(dh) + ' m &nbsp;(' +
+               (dh === 0 ? "level with the gun" : "target " + (dh > 0 ? "above" : "below") + " gun") +
+               (blank ? "; " + blank + " ASL blank, taken as 0" : "") + ")";
+
+    if (dh === 0) return line;
+    line += "<br>";
+
+    if (!w.ballistics) {
+      return line + '<span class="note">height not corrected on the L81 &mdash; expect rounds to land ' +
+        (dh > 0 ? "short" : "long") + "</span>";
+    }
+    // out of reach: the elevation box already says which way
+    if (!lastHeight || lastHeight.mil === null) return line + "no solution at this height";
+    return line + 'fires as for <span class="hl">' + fmt(lastHeight.flat, 0) +
+      " m</span> on level ground";
   }
 
   // ---- wiring -----------------------------------------------------------
@@ -1316,17 +1797,33 @@
     // scrolling over a number input silently changes it — don't
     el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
 
+    keyNav(el, inputs[(i + 1) % inputs.length]);
+  });
+
+  function keyNav(el, next) {
     el.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
-        var next = inputs[(i + 1) % inputs.length];
         next.focus();
       } else if (e.key === "Escape") {
         e.preventDefault();
         newTarget();
       }
     });
+  }
+
+  // the heights sit outside the Enter cycle so the four coordinates stay a
+  // quick loop; from either one, Enter rejoins it at the next block
+  [gunAslEl, tgtAslEl].forEach(function (el) {
+    el.addEventListener("input", function () {
+      calc();
+      if (el === gunAslEl) store("gunAsl", el.value);
+    });
+    el.addEventListener("focus", function () { el.select(); });
+    el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
   });
+  keyNav(gunAslEl, bx);
+  keyNav(tgtAslEl, ax);
 
   // ---- gun platform tilt: pitch AND roll --------------------------------
   //
@@ -1353,10 +1850,16 @@
       pitchDeg = 0,       // + = nose up
       cantAzOffset = 0;   // degrees to subtract from the bearing
 
-  // NOTE: these full-scale limits are a guess — the in-game indicator carries
-  // no published scale. The correction maths is sound; the degree readings
-  // depend on this calibration.
-  var ROLL_MAX = 25, PITCH_MAX = 25;
+  // The SPH-2 gauge reads in notches, three either side of level. Nothing
+  // published says what a notch is worth; about 10° comes from two test shots
+  // from one tilted spot, where the impacts put roll at 3.5° and pitch at 2.9°
+  // and the gauge showed "barely a third of a notch" on both. If shots still
+  // drift, re-measure on a slope and change DEG_PER_NOTCH — everything else
+  // (ladders, drag, slider limits) follows from it.
+  var DEG_PER_NOTCH = 10, NOTCHES = 3,
+      NOTCH_PX  = 13,                      // notch spacing in the drawing, SVG units
+      ROLL_MAX  = NOTCHES * DEG_PER_NOTCH,
+      PITCH_MAX = NOTCHES * DEG_PER_NOTCH;
 
   var rollRange   = document.getElementById("rollRange"),
       pitchRange  = document.getElementById("pitchRange"),
@@ -1369,46 +1872,30 @@
   pitchRange.min = -PITCH_MAX; pitchRange.max = PITCH_MAX;
 
   var leanSvg     = document.getElementById("leanSvg"),
-      leanHorizon = document.getElementById("leanHorizon"),
+      leanRollL   = document.getElementById("leanRollL"),
+      leanRollR   = document.getElementById("leanRollR"),
       leanArrows  = document.getElementById("leanArrows"),
       hullEl      = document.getElementById("hullDeg"),
       leanFixEl   = document.getElementById("leanFix");
 
-  // faint reference marks: a protractor fan for roll, rails for pitch.
-  // Built from ROLL_MAX/PITCH_MAX rather than hard-coded, so they stay honest
-  // if the calibration changes.
+  // the two notch ladders, level in the middle and NOTCHES either side,
+  // spaced as on the in-game gauge
   (function buildGuides() {
-    var parts = [], a, p, rad, s, y, i;
-
-    // roll: a short protractor fan just outboard of the horizon segments
-    for (a = -ROLL_MAX; a <= ROLL_MAX + 1e-6; a += 5) {
-      if (Math.abs(a) < 1e-6) continue;          // zero already has its own mark
-      rad = a * Math.PI / 180;
-      for (i = 0; i < 2; i++) {
-        s = i ? -1 : 1;
-        parts.push('<line x1="' + (110 + s * 64 * Math.cos(rad)).toFixed(1) +
-                   '" y1="' + (56 + s * 64 * Math.sin(rad)).toFixed(1) +
-                   '" x2="' + (110 + s * 70 * Math.cos(rad)).toFixed(1) +
-                   '" y2="' + (56 + s * 70 * Math.sin(rad)).toFixed(1) + '"/>');
-      }
+    var parts = [], k, y;
+    for (k = -NOTCHES; k <= NOTCHES; k++) {
+      y = (56 + k * NOTCH_PX).toFixed(1);
+      parts.push('<line x1="49" y1="' + y + '" x2="55" y2="' + y + '"/>');
+      parts.push('<line x1="165" y1="' + y + '" x2="171" y2="' + y + '"/>');
     }
-
-    // pitch: the vertical ladders the arrows ride, as in the gunner sight
-    for (p = -PITCH_MAX; p <= PITCH_MAX + 1e-6; p += 5) {
-      if (Math.abs(p) < 1e-6) continue;
-      y = (56 - (p / PITCH_MAX) * 26).toFixed(1);
-      var long_ = Math.abs(p % 10) < 1e-6;       // every 10 deg reads longer
-      parts.push('<line x1="' + (long_ ? 16 : 20) + '" y1="' + y + '" x2="28" y2="' + y + '"/>');
-      parts.push('<line x1="192" y1="' + y + '" x2="' + (long_ ? 204 : 200) + '" y2="' + y + '"/>');
-    }
-
     document.getElementById("leanGuides").innerHTML = parts.join("");
+    document.getElementById("leanLbl").textContent =
+      "1 notch = " + DEG_PER_NOTCH + "° · drag to match";
   })();
 
   // The L81 is an emplaced mortar on a baseplate — there is no chassis to sit
-  // crooked, so tilt neither applies nor is shown.
+  // crooked, so tilt neither applies nor is shown. Simple mode leaves it out.
   function tiltApplies() {
-    return weaponEl.value !== "mortar";
+    return advanced() && weaponEl.value !== "mortar";
   }
 
   function updateLeanVisibility() {
@@ -1416,12 +1903,13 @@
   }
 
   function drawLean() {
-    // SVG y grows downward, so a POSITIVE rotation drops the right-hand end —
-    // which is what "right side down" has to look like
-    leanHorizon.setAttribute("transform",
-      "rotate(" + rollDeg.toFixed(2) + " 110 56)");
-    leanArrows.setAttribute("transform",
-      "translate(0 " + (-(pitchDeg / PITCH_MAX) * 26).toFixed(2) + ")");
+    // everything moves in notches, as on the gauge. SVG y grows downward, so
+    // nose up lifts the arrows (negative y) and right side down drops the
+    // right-hand roll marker while the left one rises
+    var perDeg = NOTCH_PX / DEG_PER_NOTCH;
+    leanArrows.setAttribute("transform", "translate(0 " + (-pitchDeg * perDeg).toFixed(2) + ")");
+    leanRollR.setAttribute("transform",  "translate(0 " + ( rollDeg  * perDeg).toFixed(2) + ")");
+    leanRollL.setAttribute("transform",  "translate(0 " + (-rollDeg  * perDeg).toFixed(2) + ")");
 
     var rv = document.getElementById("leanRollVal"),
         pv = document.getElementById("leanPitchVal");
@@ -1451,16 +1939,19 @@
     calc();
   }
 
-  // one 2-D drag: across = roll, up/down = pitch
+  // one 2-D drag: up/down = pitch, with the arrows following the pointer
+  // notch for notch; across = roll, a ladder's distance out being full scale.
+  // The pointer is mapped through the viewBox and its letterboxing (the
+  // drawing is centred, not stretched), so it lands where the picture is.
   function leanFromEvent(e) {
-    var r = leanSvg.getBoundingClientRect(),
-        cx = r.left + r.width * (110 / 220),
-        cy = r.top + r.height * (56 / 112),
-        halfW = r.width * (90 / 220),
-        halfH = r.height * (34 / 112);
+    var r  = leanSvg.getBoundingClientRect(),
+        vb = leanSvg.viewBox.baseVal,
+        s  = Math.min(r.width / vb.width, r.height / vb.height),
+        x  = vb.x + (e.clientX - r.left - (r.width  - vb.width  * s) / 2) / s,
+        y  = vb.y + (e.clientY - r.top  - (r.height - vb.height * s) / 2) / s;
 
-    setTilt((e.clientX - cx) / halfW * ROLL_MAX,
-            -(e.clientY - cy) / halfH * PITCH_MAX);
+    setTilt((x - 110) / 58 * ROLL_MAX,
+            -(y - 56) / NOTCH_PX * DEG_PER_NOTCH);
   }
 
   var leanDragging = false;
@@ -1511,6 +2002,11 @@
 
   // ---- counter-battery triangulation -----------------------------------
 
+  // Switched off for now: nobody is using it. The panel and its maths are all
+  // still here; set this to true to bring the panel back.
+  var CB_ENABLED = false;
+  document.getElementById("cbPanel").hidden = !CB_ENABLED;
+
   // Each observation is a ray: start at the observer, run along the bearing the
   // fire came FROM. Where two rays cross is the tube. Bearings are clockwise
   // from grid north, so the direction vector is (sin, cos), not (cos, sin).
@@ -1544,7 +2040,7 @@
         y = num(document.getElementById("o" + n + "y")),
         b = num(document.getElementById("o" + n + "b"));
     if (x === null || y === null || b === null) return null;
-    return { x: x, y: y, b: b };
+    return { n: n, x: x, y: y, b: b };
   }
 
   var cbFix = null;
@@ -1564,12 +2060,13 @@
       return;
     }
 
-    // every pair that actually crosses
-    var fixes = [], cuts = [], i, j, f;
+    // every pair that actually crosses, and the ones that don't
+    var fixes = [], cuts = [], misses = [], i, j, f;
     for (i = 0; i < obs.length; i++)
       for (j = i + 1; j < obs.length; j++) {
         f = rayIntersect(obs[i], obs[j]);
         if (f) { fixes.push(f); cuts.push(cutAngle(obs[i], obs[j])); }
+        else misses.push([obs[i].n, obs[j].n]);
       }
 
     if (!fixes.length) {
@@ -1597,7 +2094,17 @@
     var html = '<span class="cb-fix">' + fmtS(cx) + " , " + fmtS(cy) + "</span>" +
                ' &nbsp;<span style="font-size:11px">enemy gun</span><br>';
 
-    if (fixes.length > 1) {
+    // a pair that won't cross means a bad bearing, so the remaining fixes
+    // can't be said to "agree" however close they happen to land
+    if (misses.length === 2) {
+      // of three observers, the one in both failed pairs is the odd one out
+      var odd = misses[0].filter(function (n) { return misses[1].indexOf(n) >= 0; })[0];
+      html += "bearing " + odd + " never crosses the others &mdash; check it. " +
+              "Fix is from the other two alone<br>";
+    } else if (misses.length === 1) {
+      html += "bearings " + misses[0][0] + " and " + misses[0][1] +
+              " never cross &mdash; one of them is off<br>";
+    } else if (fixes.length > 1) {
       html += "three bearings agree to within <b>" + fmt(Math.round(spread), 0) + " m</b><br>";
     } else {
       html += "two bearings &mdash; no cross-check, add a third<br>";
@@ -1613,6 +2120,7 @@
     } else {
       html += " &mdash; good geometry.";
     }
+    if (misses.length && !out.classList.contains("bad")) out.classList.add("warn");
 
     out.innerHTML = html;
   }
@@ -1626,18 +2134,163 @@
     });
   });
 
-  document.getElementById("cbToggle").addEventListener("click", function () {
-    var panel = document.getElementById("cbPanel"),
-        body  = document.getElementById("cbBody"),
-        open  = panel.classList.toggle("open");
-    body.hidden = !open;
-    this.setAttribute("aria-expanded", open ? "true" : "false");
+  var cbToggleEl = document.getElementById("cbToggle");
+
+  function setCbOpen(open) {
+    document.getElementById("cbPanel").classList.toggle("open", open);
+    document.getElementById("cbBody").hidden = !open;
+    cbToggleEl.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  cbToggleEl.addEventListener("click", function () {
+    setCbOpen(this.getAttribute("aria-expanded") !== "true");
   });
+
+  // ---- fit to screen ----------------------------------------------------
+  //
+  // Wide windows get the three-column layout, drawn for about FIT_W × FIT_H
+  // CSS px: the tallest column, worst case, is just under FIT_H. Scale it to
+  // fill the window, capped so a 1440p screen isn't absurd and floored where
+  // text would get too small to read — below that the page simply scrolls.
+  var FIT_W = 1250, FIT_H = 640,
+      deskMQ = window.matchMedia("(min-width: 1100px)");
+
+  function fitToScreen() {
+    var z = Math.min((window.innerHeight - 28) / FIT_H,
+                     (window.innerWidth  - 36) / FIT_W);
+    z = Math.max(0.8, Math.min(1.6, z));
+    document.documentElement.style.setProperty("--fit", deskMQ.matches ? z.toFixed(3) : "1");
+  }
+  window.addEventListener("resize", fitToScreen);
+  fitToScreen();
+
+  // the desktop layout has room for it, so it starts open there
+  if (CB_ENABLED && deskMQ.matches) setCbOpen(true);
+
+  // ---- adjust from impact: the panel ------------------------------------
+
+  var adjPanelEl = document.getElementById("adjPanel"),
+      adjMilEl   = document.getElementById("adjMil"),
+      adjBrgEl   = document.getElementById("adjBrg"),
+      adjXEl     = document.getElementById("adjX"),
+      adjYEl     = document.getElementById("adjY"),
+      adjAslEl   = document.getElementById("adjAsl"),
+      adjMsgEl   = document.getElementById("adjMsg"),
+      adjApplyEl = document.getElementById("adjApply"),
+      adjFiredTouched = false,    // user typed their own Fired values
+      adjPending = null;          // the logged round, ready to apply
+
+  function wrap180(d) { return ((d % 360) + 540) % 360 - 180; }
+
+  // the round in the panel, measured against the current target: what the
+  // platform added to it and what the next round should be. null while the
+  // panel or the gun/target is incomplete.
+  function adjRead() {
+    var w  = WEAPONS[weaponEl.value] || WEAPONS.mortar,
+        k  = parseFloat(scaleEl.value) || 1,
+        v  = [num(ax), num(ay), num(bx), num(by), num(adjMilEl), num(adjBrgEl), num(adjXEl), num(adjYEl)],
+        i;
+    for (i = 0; i < v.length; i++) if (v[i] === null) return null;
+
+    var x1 = v[0], y1 = v[1],
+        rt = Math.hypot((v[2] - x1) * k, (v[3] - y1) * k),
+        bt = normBearing(Math.atan2((v[2] - x1) * k, (v[3] - y1) * k) * 180 / Math.PI),
+        ri = Math.hypot((v[6] - x1) * k, (v[7] - y1) * k),
+        bi = normBearing(Math.atan2((v[6] - x1) * k, (v[7] - y1) * k) * 180 / Math.PI),
+        // where it landed is taken to be at the target's height unless given
+        hi = num(adjAslEl),
+        dhT = heightDiff(),
+        dhI = hi === null || !advanced() ? dhT : hi - (num(gunAslEl) || 0),
+        mT = levelMil(w, rt, dhT),
+        mI = levelMil(w, ri, dhI);
+
+    if (mI === null) return { error: "That impact is outside the firing table &mdash; check its X/Y." };
+    if (mT === null) return { error: "The target itself is out of reach." };
+
+    var dM = v[4] - mI, dB = wrap180(v[5] - bi);
+    return {
+      dM: dM, dB: dB, range: ri, bearing: bi,
+      long: ri - rt,
+      side: rt * Math.sin(wrap180(bi - bt) * Math.PI / 180),
+      mil: mT + dM, brg: normBearing(bt + dB)
+    };
+  }
+
+  function adjUpdate() {
+    var impactEmpty = adjXEl.value.trim() === "" && adjYEl.value.trim() === "",
+        p, msg;
+
+    // "Fired" follows the solution on screen — the data you are about to fire —
+    // until you type your own, and freezes once an impact is being entered
+    if (!adjFiredTouched && impactEmpty) {
+      adjMilEl.value = lastElev === null ? "" : String(Math.round(lastElev));
+      adjBrgEl.value = lastDeg  === null ? "" : String(Math.round(lastDeg * 10) / 10);
+    }
+
+    p = impactEmpty ? null : adjRead();
+    adjPending = p && !p.error ? p : null;
+    adjApplyEl.disabled = !adjPending;
+    adjPanelEl.classList.toggle("on", !!lastAdj);
+
+    if (p && p.error) {
+      msg = p.error;
+    } else if (p) {
+      msg = "Landed " + fmt(Math.abs(p.long), 0) + " m " + (p.long >= 0 ? "long" : "short") + ", " +
+            fmt(Math.abs(p.side), 0) + " m " + (p.side >= 0 ? "right" : "left") +
+            " &rarr; next <span class=\"hl\">" + Math.round(p.mil) + " mil &middot; " +
+            fmt(p.brg, 1) + "&deg;</span>";
+    } else if (!impactEmpty) {
+      msg = "Enter the gun, target, what you fired and both X and Y of the impact.";
+    } else if (lastAdj) {
+      msg = "In use: the platform adds <span class=\"hl\">" + (lastAdj.dM >= 0 ? "+" : "") +
+            fmt(Math.round(lastAdj.dM), 0) + " mil, " + (lastAdj.dB >= 0 ? "+" : "") +
+            fmt(lastAdj.dB, 1) + "&deg;</span> here. Log the next impact to refine it.";
+    } else if (adjFar) {
+      msg = "Measured near " + fmt(adj.bearing, 0) + "&deg; / " + fmt(adj.range, 0) +
+            " m &mdash; too far from this target to use.";
+    } else {
+      msg = "Fire, then enter where the round landed.";
+    }
+    adjMsgEl.innerHTML = msg;
+  }
+
+  function adjApply() {
+    if (!adjPending) return;
+    adj = { dM: adjPending.dM, dB: adjPending.dB, range: adjPending.range,
+            bearing: adjPending.bearing, weapon: weaponEl.value, gun: gunKey() };
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";
+    adjFiredTouched = false;
+    calc();
+    if (lastElev !== null && lastDeg !== null)
+      toast("Next round " + Math.round(lastElev) + " mil, " + fmt(lastDeg, 1) + "°");
+  }
+
+  function adjClear() {
+    adj = null;
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";
+    adjFiredTouched = false;
+    calc();
+  }
+
+  [adjMilEl, adjBrgEl, adjXEl, adjYEl, adjAslEl].forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (el === adjMilEl || el === adjBrgEl) adjFiredTouched = true;
+      adjUpdate();
+    });
+    el.addEventListener("focus", function () { el.select(); });
+    el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); adjApply(); }
+    });
+  });
+  adjApplyEl.addEventListener("click", adjApply);
+  document.getElementById("adjClear").addEventListener("click", adjClear);
 
   document.getElementById("cbUse").addEventListener("click", function () {
     if (!cbFix) return;
     bx.value = fmtPlain(cbFix.x);
     by.value = fmtPlain(cbFix.y);
+    tgtAslEl.value = "";          // the old target's height says nothing about this one
     calc();
     toast("Target set to enemy gun");
   });
@@ -1657,6 +2310,8 @@
   function newTarget() {
     bx.value = "";
     by.value = "";
+    tgtAslEl.value = "";
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";   // that impact was the old target's
     calc();
     bx.focus();
   }
@@ -1664,9 +2319,9 @@
   document.getElementById("newTarget").addEventListener("click", newTarget);
 
   document.getElementById("clearAll").addEventListener("click", function () {
-    inputs.forEach(function (el) { el.value = ""; });
-    store("ax", ""); store("ay", "");
-    calc();
+    inputs.concat(gunAslEl, tgtAslEl).forEach(function (el) { el.value = ""; });
+    store("ax", ""); store("ay", ""); store("gunAsl", "");
+    adjClear();
     ax.focus();
   });
 
@@ -1707,18 +2362,42 @@
     calc();
   });
 
+  // ---- targeting mode ---------------------------------------------------
+
+  var appEl    = document.querySelector(".app"),
+      modeBtns = [].slice.call(document.querySelectorAll(".seg button"));
+
+  function setMode(m) {
+    mode = m === "simple" ? "simple" : "advanced";
+    appEl.classList.toggle("simple", mode === "simple");
+    modeBtns.forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-mode") === mode ? "true" : "false");
+    });
+    store("mode", mode);
+    updateLeanVisibility();
+    calc();
+  }
+
+  modeBtns.forEach(function (b) {
+    b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); });
+  });
+
   // restore gun position
-  ["ax", "ay"].forEach(function (k) {
+  ["ax", "ay", "gunAsl"].forEach(function (k) {
     var v = load(k);
     if (v) document.getElementById(k).value = v;
   });
 
-  // restore grid scale + weapon
+  // restore grid scale + weapon. A value with no matching option would blank
+  // the select and quietly fall back to raw metres, so only take known ones.
   var savedScale = load("scale");
-  if (savedScale) scaleEl.value = savedScale;
+  if (savedScale && [].some.call(scaleEl.options, function (o) { return o.value === savedScale; }))
+    scaleEl.value = savedScale;
 
   var savedWeapon = load("weapon");
   if (savedWeapon && WEAPONS[savedWeapon]) weaponEl.value = savedWeapon;
+
+  setMode(load("mode"));        // remembered like the weapon; Advanced if unset
 
   updateLeanVisibility();
   drawLean();
