@@ -798,7 +798,7 @@
         </div>
         <div class="field asl-field">
           <label>ASL</label>
-          <input id="gunAsl" type="number" step="any" placeholder="optional"
+          <input id="gunAsl" type="number" step="any" placeholder="0"
                  autocomplete="off" inputmode="decimal">
         </div>
       </div>
@@ -817,7 +817,7 @@
         </div>
         <div class="field asl-field">
           <label>ASL</label>
-          <input id="tgtAsl" type="number" step="any" placeholder="optional"
+          <input id="tgtAsl" type="number" step="any" placeholder="0"
                  autocomplete="off" inputmode="decimal">
         </div>
       </div>
@@ -832,7 +832,7 @@
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
-      <b>ASL</b> &mdash; from the sight's readout; both heights correct the SPH-2<br>
+      <b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br>
       Gun position, grid scale and weapon are remembered.
     </div>
 
@@ -1275,10 +1275,12 @@
     return val;
   }
 
-  // target height relative to the gun, or null unless both are entered
+  // target height relative to the gun. A blank ASL counts as 0, so a gun
+  // height on its own still corrects; null only when both are blank
   function heightDiff() {
     var h1 = num(gunAslEl), h2 = num(tgtAslEl);
-    return (h1 === null || h2 === null) ? null : h2 - h1;
+    if (h1 === null && h2 === null) return null;
+    return (h2 || 0) - (h1 || 0);
   }
 
   var GUN_X = 26, GROUND_Y = 100, TGT_X = 176, BARREL_LEN = 40;
@@ -1554,11 +1556,15 @@
     if (dh === null) return "";
 
     var w = WEAPONS[weaponEl.value] || WEAPONS.mortar,
-        line = '<br><span class="k">H</span> = ' + fmtS(num(tgtAslEl)) + ' &minus; ' +
-               fmtS(num(gunAslEl)) + ' = ' + (dh > 0 ? "+" : "") + fmtS(dh) + ' m &nbsp;';
+        h1 = num(gunAslEl), h2 = num(tgtAslEl),
+        blank = h1 === null ? "gun" : h2 === null ? "target" : "",
+        line = '<br><span class="k">H</span> = ' + fmtS(h2 || 0) + ' &minus; ' +
+               fmtS(h1 || 0) + ' = ' + (dh > 0 ? "+" : "") + fmtS(dh) + ' m &nbsp;(' +
+               (dh === 0 ? "level with the gun" : "target " + (dh > 0 ? "above" : "below") + " gun") +
+               (blank ? "; " + blank + " ASL blank, taken as 0" : "") + ")";
 
-    if (dh === 0) return line + "(level with the gun)";
-    line += "(target " + (dh > 0 ? "above" : "below") + " gun)<br>";
+    if (dh === 0) return line;
+    line += "<br>";
 
     if (!w.ballistics) {
       return line + '<span class="note">height not corrected on the L81 &mdash; expect rounds to land ' +
