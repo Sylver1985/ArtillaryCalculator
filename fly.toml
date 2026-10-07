@@ -4,9 +4,10 @@
 # If it's ever taken, change it here and in DEPLOY.md's commands.
 app = "wardogs-firegrid"
 
-# Sydney. A static page loads fast from anywhere, so one region is plenty;
-# `fly platform regions` lists the others.
-primary_region = "syd"
+# Ashburn, Virginia: beside LobbyForge, and Fly's cheapest region. A static
+# page loads fast from anywhere, so one region is plenty; `fly platform
+# regions` lists the others.
+primary_region = "iad"
 
 [build]
   dockerfile = "Dockerfile"

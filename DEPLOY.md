@@ -14,7 +14,7 @@ account. The donate link, ad spaces and AdSense are in [SITE.md](SITE.md).
 
 | File | Purpose |
 |---|---|
-| `fly.toml` | App settings: name, region (`syd`), machine size, auto-stop, health check. |
+| `fly.toml` | App settings: name, region (`iad`), machine size, auto-stop, health check. |
 | `Dockerfile` | Builds the nginx image from the page, `privacy.html`, `img/` and `site/`. |
 | `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, `www.` to bare domain redirect, gzip, security headers, `/healthz`. |
 | `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes, once it has a token (step 6). |
@@ -75,9 +75,12 @@ fly deploy -a wardogs-firegrid
 ```
 
 This uploads the folder, builds the image on Fly's builders and starts it in
-Sydney; the first time takes a minute or two. Fly makes **two machines**: one
-serves the site and the other is a stopped spare that only starts in a real
-rush (it costs cents a month while stopped).
+Ashburn, Virginia (`iad`), beside LobbyForge; the first time takes a minute or
+two. Fly makes **two machines**, on different physical servers: one serves
+the site, and the other is a stopped spare that only starts if the first goes
+down or more than 200 requests arrive at once. A stopped machine costs only its
+storage, under a cent a month, so the backup is nearly free. To run just one:
+`fly scale count 1 -a wardogs-firegrid`.
 
 Check `https://wardogs-firegrid.fly.dev` opens, then the L81 and SPH-2 tabs.
 
@@ -163,17 +166,35 @@ folder.
 
 ## Cost
 
-Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
-and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. Current
+Roughly **US$3–5 a month at 50,000 visits a week**: about $2.20 for the
+machine and $1–3 for bandwidth. Traffic mostly affects the bandwidth part. Current
 prices: <https://fly.io/docs/about/pricing/>.
 
 - The machine **stops when nobody is using it** and starts on the next visit,
   so that first visitor waits about a second. To keep it always on, set
   `min_machines_running = 1` in `fly.toml` and deploy.
-- **Region:** `syd` costs about a quarter more than Fly's cheapest regions. If
-  most players turn out to be in the US or Europe, a region there (e.g. `iad`
-  or `lhr`) is cheaper and faster for them: change `primary_region` in
-  `fly.toml` and deploy (`fly platform regions` lists them).
+- **Region:** `iad` (Ashburn, Virginia) is Fly's cheapest region and close to
+  most US and European players. The page is one small download, so players
+  further away barely notice. To move it, see "Moving to another region"
+  below.
+
+## Moving to another region
+
+`primary_region` in `fly.toml` decides where new machines start, but
+existing machines stay where they are. To move them, e.g. from Sydney to
+Ashburn: set `primary_region`, then
+
+```
+fly deploy -a wardogs-firegrid
+fly scale count 2 --region iad -a wardogs-firegrid
+fly scale count 0 --region syd -a wardogs-firegrid
+fly status -a wardogs-firegrid
+```
+
+The first `scale` starts the new machines (2: the running one and its spare;
+use 1 if you've scaled down to one), the second removes the old ones, and
+`fly status` should list only the new region. The site stays up
+throughout, and its addresses and certificates don't change.
 
 ## AdSense: ads.txt
 
