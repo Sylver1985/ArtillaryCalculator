@@ -52,14 +52,20 @@ keeps its costs and access separate from anything else on your Fly account:
 
 ```
 fly orgs create wardogs-firegrid
-fly orgs list
+```
+
+**Before the next command, add a payment card to the new organisation**, or Fly
+refuses to create the app ("We need your payment information to continue"):
+open <https://fly.io/dashboard/wardogs-firegrid/billing> and add one. The
+organisation is billed on its own. Then:
+
+```
 fly apps create wardogs-firegrid --org wardogs-firegrid
 ```
 
-`fly orgs list` shows the new organisation's slug; if it isn't exactly
-`wardogs-firegrid` (say the name was taken), use the slug it shows after
-`--org`. The new organisation is billed on its own; if Fly asks for a payment
-card for it, add one on the Fly dashboard under the organisation's **Billing**. (To use
+If `fly orgs create` reported a different slug in brackets (say the name was
+taken), use that after `--org`. Run the commands in this guide one at a time and
+check each succeeds before the next: a failed step makes the rest fail too. (To use
 an organisation you already have instead, skip `orgs create` and give
 `--org` that one's name; `fly orgs list` shows them. It's still its own app
 and machines either way.)
