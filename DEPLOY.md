@@ -45,32 +45,28 @@ fly auth whoami
   then open a new PowerShell window.
 - Not logged in: `fly auth login`.
 
-### 3. Create the app in its own organisation
+### 3. Create the app
 
-A Fly organisation has its own bill and members. Giving the calculator one
-keeps its costs and access separate from anything else on your Fly account:
-
-```
-fly orgs create wardogs-firegrid
-```
-
-**Before the next command, add a payment card to the new organisation**, or Fly
-refuses to create the app ("We need your payment information to continue"):
-open <https://fly.io/dashboard/wardogs-firegrid/billing> and add one. The
-organisation is billed on its own. Then:
+Fly bills per **organisation**, and your account's existing one already has your
+payment card, so create the app there. It's still its own app with its own
+machines; only the bill is shared.
 
 ```
-fly apps create wardogs-firegrid --org wardogs-firegrid
+fly orgs list
+fly apps create wardogs-firegrid --org personal
 ```
 
-If `fly orgs create` reported a different slug in brackets (say the name was
-taken), use that after `--org`. Run the commands in this guide one at a time and
-check each succeeds before the next: a failed step makes the rest fail too. (To use
-an organisation you already have instead, skip `orgs create` and give
-`--org` that one's name; `fly orgs list` shows them. It's still its own app
-and machines either way.)
+`personal` is your account's own organisation; if `fly orgs list` shows the
+one you want under another name, use that. If the name is taken, see
+[Troubleshooting](#troubleshooting).
 
-If the app name is taken, see [Troubleshooting](#troubleshooting).
+**Want a separate bill?** Run `fly orgs create wardogs-firegrid`, add a payment
+card at <https://fly.io/dashboard/wardogs-firegrid/billing> (Fly refuses to
+create apps in a new organisation until it has one: "We need your payment
+information to continue"), then use `--org wardogs-firegrid` above.
+
+Run the commands in this guide one at a time and check each succeeds before
+the next: a failed step makes the rest fail too.
 
 ### 4. Deploy
 
@@ -168,8 +164,7 @@ folder.
 ## Cost
 
 Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
-and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. A new
-organisation has no free allowance. Current prices:
+and $1–4 for bandwidth. Traffic mostly affects the bandwidth part.  Current prices:
 <https://fly.io/docs/about/pricing/>.
 
 - The machine **stops when nobody is using it** and starts on the next visit,
