@@ -1,7 +1,7 @@
 # Fly.io app config. See DEPLOY.md.
 #
-# `app` must be unique across all of Fly.io: change it to a name of your own
-# before the first deploy (it also becomes the address, <app>.fly.dev).
+# `app` is unique across all of Fly.io and gives the <app>.fly.dev address.
+# If it's ever taken, change it here and in DEPLOY.md's commands.
 app = "wardogs-artillery"
 
 # Sydney. A static page loads fast from anywhere, so one region is plenty;
@@ -21,6 +21,13 @@ primary_region = "syd"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
+
+  # nginx serves a static page easily, so one machine takes all the normal
+  # traffic; the spare that `fly deploy` makes only starts in a real rush
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
 
   [[http_service.checks]]
     method = "GET"

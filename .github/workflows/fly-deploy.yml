@@ -1,6 +1,6 @@
 # Redeploys to Fly.io whenever main changes (or on demand from the Actions
-# tab). It does nothing until a FLY_API_TOKEN repository secret exists —
-# DEPLOY.md, "Automatic deploys", has the two commands to set one up.
+# tab). It does nothing until a FLY_API_TOKEN repository secret exists:
+# DEPLOY.md, step 6, "Turn on automatic deploys".
 name: Deploy to Fly.io
 
 on:

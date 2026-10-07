@@ -38,9 +38,10 @@ var SITE_CONFIG = {
 };
 ```
 
-Edit, commit, and put the new version online: upload the new `index.html`
-([HOSTINGER.md, "Updating the site"](HOSTINGER.md#updating-the-site)), or let
-a merge to `main` do it if you've turned on automatic updates.
+Edit, commit, and put the new version online. On Fly.io a merge to `main`
+deploys it once automatic deploys are on ([DEPLOY.md](DEPLOY.md), step 6),
+or run `fly deploy -a wardogs-artillery`. On Hostinger, upload the new
+`index.html` ([HOSTINGER.md](HOSTINGER.md#updating-the-site)).
 
 ## Donations
 

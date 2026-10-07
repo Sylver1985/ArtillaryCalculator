@@ -22,9 +22,10 @@ pages (`#l81`, `#sph2` when opened from disk).
 
 ## Host it
 
-- **Hostinger** or similar web hosting: [HOSTINGER.md](HOSTINGER.md). Upload
-  four files; optional automatic updates from GitHub.
-- **Fly.io**: [DEPLOY.md](DEPLOY.md). A small nginx container.
+- **Fly.io** (in use): [DEPLOY.md](DEPLOY.md). A small nginx container at
+  `artillery.lobbyforge.net`, redeployed when `main` changes.
+- **Hostinger** or similar web hosting, as an alternative:
+  [HOSTINGER.md](HOSTINGER.md). Upload four files.
 - Donate link, ad spaces, sponsors and AdSense, on either host:
   [SITE.md](SITE.md).
 

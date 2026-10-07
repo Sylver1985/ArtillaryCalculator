@@ -1,103 +1,151 @@
 # Launching the calculator on Fly.io
 
-The calculator is a single self-contained page, so the server is tiny: nginx in
-a Docker image, serving it on Fly.io. Fly builds the image for you, so you don't
-need Docker on your own computer. (Hosting on Hostinger instead? See
-[HOSTINGER.md](HOSTINGER.md).) The donate link, ad spaces and AdSense are set
-up the same way on either host: [SITE.md](SITE.md).
+The calculator becomes its own Fly app, **`wardogs-artillery`**, alongside
+the LobbyForge app that already serves `lobbyforge.net`, and lives at
+**`https://artillery.lobbyforge.net`**. The server is nginx in a small Docker
+image; Fly builds it for you, so you don't need Docker on your computer.
+
+Every command below names the app with `-a wardogs-artillery`, so none of them
+can touch LobbyForge by mistake. The donate link, ad spaces and AdSense are in
+[SITE.md](SITE.md).
 
 ## The Fly.io files
 
 | File | Purpose |
 |---|---|
-| `deploy/nginx.conf` | Web server config: port 8080, the `/l81` and `/sph2` addresses, gzip, security headers, `/healthz`. |
+| `fly.toml` | App settings: name, region (`syd`), machine size, auto-stop, health check. |
 | `Dockerfile` | Builds the nginx image from the page, `privacy.html` and `site/`. |
-| `fly.toml` | Fly.io app settings: name, region, health check, machine size. |
-| `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes. |
+| `deploy/nginx.conf` | Web server config: the `/l81` and `/sph2` addresses, gzip, security headers, `/healthz`. |
+| `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes, once it has a token (step 6). |
 
-## First launch
+## Launch
 
-You'll need a Fly.io account; signing up asks for a payment card.
+Run these in **PowerShell** on Windows (a macOS or Linux terminal takes the same
+commands).
 
-1. **Install `flyctl`**, Fly's command-line tool:
-   - Windows (PowerShell): `iwr https://fly.io/install.ps1 -useb | iex`
-   - macOS: `brew install flyctl`
-   - Linux: `curl -L https://fly.io/install.sh | sh`
+### 1. Get the repo
 
-2. **Sign in** (or `fly auth signup` for a new account):
-   ```
-   fly auth login
-   ```
-
-3. **Pick the app's name.** Open `fly.toml` and change `app = "wardogs-artillery"`
-   to a name of your own. It must be unique across Fly.io and becomes the
-   address: `https://<name>.fly.dev`. Change `primary_region` too if you like;
-   `syd` (Sydney) is set. `fly platform regions` lists the others.
-
-4. **Create the app and deploy.** From the repo folder:
-   ```
-   fly apps create <name>
-   fly deploy
-   ```
-   `fly deploy` uploads the folder, builds the image on Fly's builders and starts
-   it. The first deploy takes a minute or two.
-
-5. **Open it:**
-   ```
-   fly open
-   ```
-
-### Check it's healthy
 ```
-fly status        # machines and health check
-fly logs          # nginx access/error log, live
+git clone https://github.com/Sylver1985/ArtillaryCalculator.git
+cd ArtillaryCalculator
 ```
 
-## Your own domain
+No Git? On GitHub: **Code → Download ZIP**, extract it, open the folder, and
+right-click in it → **Open in Terminal**.
 
-The site works at `<name>.fly.dev` straight away. To use your own domain, for
-example `artillery.lobbyforge.net`:
+### 2. Check flyctl and your login
 
-1. Request a certificate:
-   ```
-   fly certs add artillery.lobbyforge.net
-   ```
-2. Add the DNS record it asks for at your DNS provider. For a subdomain that is
-   usually a `CNAME` pointing at `<name>.fly.dev`; for a bare domain, the `A`
-   and `AAAA` records from `fly ips list`.
-3. Check progress with `fly certs show artillery.lobbyforge.net`. HTTPS is
-   live once it says the certificate is issued, usually within minutes.
+You already run LobbyForge on Fly, so these probably just work:
 
-**AdSense needs a domain you own**: it won't approve a `*.fly.dev` address
-(see [SITE.md, "Setting up AdSense"](SITE.md#setting-up-adsense)).
+```
+fly version
+fly auth whoami
+```
 
-## Updating the site
+- `fly` not found: install it with `iwr https://fly.io/install.ps1 -useb | iex`,
+  then open a new PowerShell window.
+- Not logged in: `fly auth login`.
 
-Manually: edit, commit, then `fly deploy` again.
+### 3. Create the app
 
-### Automatic deploys
+```
+fly apps create wardogs-artillery
+```
 
-`.github/workflows/fly-deploy.yml` redeploys every time `main` changes, so merging
-a pull request puts it live. It stays idle until GitHub has a Fly token:
+If you're in more than one Fly organisation it asks which; pick the one
+LobbyForge is in (`fly orgs list` shows them). If the name is taken, see
+[Troubleshooting](#troubleshooting).
 
-1. Create a deploy token for the app:
-   ```
-   fly tokens create deploy -x 999999h
-   ```
-2. On GitHub: the repo → **Settings → Secrets and variables → Actions → New
-   repository secret**. Name it `FLY_API_TOKEN` and paste the whole token,
-   including the `FlyV1 ` at the start.
+### 4. Deploy
 
-The next push to `main` deploys. You can also run it by hand from the
-**Actions** tab ("Deploy to Fly.io" → **Run workflow**).
+```
+fly deploy -a wardogs-artillery
+```
+
+This uploads the folder, builds the image on Fly's builders and starts it in
+Sydney; the first time takes a minute or two. Fly makes **two machines**: one
+serves the site and the other is a stopped spare that only starts in a real
+rush (it costs cents a month while stopped).
+
+Check `https://wardogs-artillery.fly.dev` opens, then the L81 and SPH-2 tabs.
+
+### 5. Put it on artillery.lobbyforge.net
+
+Ask Fly for a certificate:
+
+```
+fly certs add artillery.lobbyforge.net -a wardogs-artillery
+```
+
+`lobbyforge.net`'s DNS is at Hostinger, so add the record there: hPanel →
+**Domains** → `lobbyforge.net` → **DNS / Nameservers** → DNS records → add:
+
+| Type | Name | Target (Points to) | TTL |
+|---|---|---|---|
+| `CNAME` | `artillery` | `wardogs-artillery.fly.dev` | leave the default |
+
+Leave the existing `lobbyforge.net` and `www` records alone; they point at
+LobbyForge. If `fly certs add` also mentions an `_acme-challenge` record, it's
+optional with the CNAME in place.
+
+Then check, and repeat every few minutes until the certificate shows as issued:
+
+```
+fly certs check artillery.lobbyforge.net -a wardogs-artillery
+```
+
+Usually that's within minutes of the DNS record going live (DNS can take up
+to a few hours). Then open `https://artillery.lobbyforge.net`, `/l81` and
+`/sph2`.
+
+### 6. Turn on automatic deploys
+
+After this, merging into `main` puts the change live; no more `fly deploy`.
+
+```
+fly tokens create deploy -a wardogs-artillery
+```
+
+Copy the whole token it prints, including the `FlyV1 ` at the start. On
+GitHub: the repo → **Settings → Secrets and variables → Actions → New
+repository secret**. Name `FLY_API_TOKEN`, paste the token, **Add secret**.
+
+To test it: **Actions → Deploy to Fly.io → Run workflow**. It should finish
+green within a couple of minutes.
+
+## Day to day
+
+```
+fly status -a wardogs-artillery     # machines and health check
+fly logs -a wardogs-artillery       # live nginx log
+```
+
+To deploy by hand (no GitHub token, or a change you haven't pushed): pull or
+download the latest repo, then `fly deploy -a wardogs-artillery` from its
+folder.
 
 ## Cost
 
-`fly.toml` asks for the smallest machine (shared CPU, 256 MB), and it **stops
-when nobody is using it** and starts on the next visit. That first visitor waits
-about a second. A static site this size costs very little; current prices are
-at <https://fly.io/docs/about/pricing/>. To keep it always warm, set
-`min_machines_running = 1` in `fly.toml` and redeploy.
+Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
+and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. If your Fly
+organisation is on one of the older plans (from before October 2024), its free
+allowances may cover much of this. Current prices:
+<https://fly.io/docs/about/pricing/>.
+
+- The machine **stops when nobody is using it** and starts on the next visit,
+  so that first visitor waits about a second. To keep it always on, set
+  `min_machines_running = 1` in `fly.toml` and deploy.
+- **Region:** `syd` costs about a quarter more than Fly's cheapest regions. If
+  most players turn out to be in the US or Europe, a region there (e.g. `iad`
+  or `lhr`) is cheaper and faster for them: change `primary_region` in
+  `fly.toml` and deploy (`fly platform regions` lists them).
+
+## AdSense: ads.txt
+
+Google reads `ads.txt` only from the main domain, so it has to come from
+`https://lobbyforge.net/ads.txt`, which the **LobbyForge** app serves
+(currently a 404), not this one. When you set up AdSense, add the file to
+LobbyForge's site. Details: [SITE.md, "Setting up AdSense"](SITE.md#setting-up-adsense).
 
 ## Trying the server locally (optional)
 
@@ -111,10 +159,17 @@ directly; the calculator itself needs no server.
 
 ## Troubleshooting
 
-- **"Name has already been taken"**: pick another `app` name in `fly.toml`
-  and rerun `fly apps create`.
-- **Deploy hangs on health checks**: `fly logs` shows nginx's error. The
-  check is `GET /healthz` on port 8080.
+- **"Name has already been taken"** at step 3: pick another name (e.g.
+  `wardogs-artillery-lf`), put it in `fly.toml` (`app = "…"`), and use it in
+  place of `wardogs-artillery` in every command, including the CNAME target.
+- **`certs check` says the DNS isn't set up**: check the CNAME's name is just
+  `artillery` and its target is `wardogs-artillery.fly.dev`. If you'd created
+  `artillery.lobbyforge.net` as a website or subdomain in hPanel earlier,
+  remove it; its own `A` record for `artillery` would clash with the CNAME.
+- **Deploy hangs on health checks**: `fly logs -a wardogs-artillery` shows
+  nginx's error. The check is `GET /healthz` on port 8080.
 - **Changes not showing**: the page is served with `Cache-Control: no-cache`,
-  so a normal reload picks up a new deploy. Check `fly status` shows the new
-  version.
+  so a normal reload picks up a new deploy. `fly status -a wardogs-artillery`
+  shows which version is running.
+- **The GitHub deploy fails with an auth error**: the `FLY_API_TOKEN` secret
+  is missing part of the token. Create a new one (step 6) and paste all of it.
