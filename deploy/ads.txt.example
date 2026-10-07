@@ -1,0 +1,4 @@
+# Copy to site/ads.txt and put your own AdSense publisher ID in place of the
+# zeros (it is the ca-pub-... number without the "ca-"), then redeploy.
+# Google checks https://<your-domain>/ads.txt before serving ads.
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

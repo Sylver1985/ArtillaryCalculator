@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Artillery &amp; Mortar Range Calculator</title>
+<title>Wardogs Artillery &amp; Mortar Calculator</title>
+<meta name="description" content="Range, bearing and mils for the Wardogs L81 mortar and SPH-2, with target-height and platform-tilt correction and adjust-from-impact.">
+<meta name="theme-color" content="#0d1110">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230d1110%27/%3E%3Cpath d=%27M5 25 L14 13%27 stroke=%27%23f0b23c%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M7 25 Q16 1 27 25%27 fill=%27none%27 stroke=%27%237dd87d%27 stroke-width=%272%27 stroke-dasharray=%273 2%27/%3E%3C/svg%3E">
 <style>
   :root {
     --bg:        #0d1110;
@@ -81,8 +84,8 @@
   .col { display: contents; }
   .lean { order: 1; }
   .readout, .visuals, .working, .adj { order: 2; }
-  .cb { order: 3; }
-  .actions, .hint { order: 4; }
+  .cb, .ad-slot { order: 3; }
+  .actions, .lf-strip, .hint { order: 4; }
 
   header {
     text-align: center;
@@ -216,10 +219,10 @@
     color: var(--accent);
     background: #1f2a25;
   }
-  /* Simple: flat-ground answers from the table alone, so the height inputs
-     and counter-battery go, and the tilt panel is hidden from script —
-     which leaves the tools column empty, so it goes too */
-  .app.simple .asl-field, .app.simple .adv-only, .app.simple .col-tools { display: none; }
+  /* Simple: flat-ground answers from the table alone, so the height inputs,
+     impact adjustment and counter-battery go, and the tilt panel is hidden
+     from script — leaving the tools column with just the ad space */
+  .app.simple .asl-field, .app.simple .adv-only { display: none; }
   .app.simple .fields { grid-template-columns: 1fr 1fr; }
 
   /* ---------- readout ---------- */
@@ -642,6 +645,78 @@
   .adj-msg { flex: 1; font-size: 12px; line-height: 1.5; color: var(--dim); min-height: 18px; }
   .adj-msg .hl { color: var(--accent); font-weight: 700; }
 
+  /* ---------- ad space and LobbyForge ---------- */
+
+  .ad-slot {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 7px 10px 10px;
+  }
+  .ad-label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #4b5a52;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ad-fill {
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* A network ad keeps its real 300x250 whatever the page's fit-to-screen
+     zoom: scaling someone else's ad is both ugly and against ad-network
+     rules, so the zoom is undone here and the space sized to match. */
+  .ad-slot.net .ad-fill { min-height: calc(250px / var(--fit, 1)); }
+  .ad-host { zoom: calc(1 / var(--fit, 1)); }
+
+  /* LobbyForge: Discord blurple, so it reads as a different product */
+  .lf-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 250px;
+    padding: 18px 20px;
+    border: 1px solid #3c4170;
+    border-radius: 4px;
+    background: linear-gradient(160deg, rgba(88, 101, 242, 0.20), rgba(21, 27, 25, 0.55) 70%);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color .12s;
+  }
+  .lf-card:hover { border-color: #5865f2; }
+  .lf-logo { display: block; height: 26px; width: auto; max-width: 100%; object-fit: contain; object-position: left; color: #aab1ff; font-weight: 700; font-size: 16px; }
+  .lf-brand { font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #aab1ff; }
+  .lf-head { font-size: 16px; font-weight: 700; line-height: 1.35; color: #e6e8ff; }
+  .lf-copy { font-size: 12px; line-height: 1.6; color: var(--dim); }
+  .lf-cta {
+    align-self: flex-start;
+    background: #5865f2;
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    border-radius: 3px;
+  }
+  .lf-strip {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #3c4170;
+    border-radius: 4px;
+    background: rgba(88, 101, 242, 0.12);
+    color: var(--text);
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .lf-strip b { color: #aab1ff; }
+  .lf-strip:hover { border-color: #5865f2; }
+  .hint a { color: var(--dim); }
+
   /* ---------- counter-battery ---------- */
 
   .cb {
@@ -815,11 +890,6 @@
       gap: 14px;
       min-height: calc((100vh - 28px) / var(--fit, 1));
     }
-    /* Simple drops the tools column: the other two keep their widths */
-    .app.simple {
-      max-width: 1000px;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-    }
     .col {
       display: flex;
       flex-direction: column;
@@ -833,9 +903,13 @@
 
     /* the drawings would size their height off their width; basis 0 and a
        0-floored row make them take the leftover height instead */
-    .visuals { flex: 1 1 0; min-height: 170px; grid-template-rows: minmax(0, 1fr); }
+    .visuals { flex: 1 1 0; min-height: 120px; grid-template-rows: minmax(0, 1fr); }
     .vis { display: flex; flex-direction: column; min-height: 0; }
     .vis-svg { flex: 1 1 0; height: auto; min-height: 0; }
+
+    /* the solution column is wide enough for the adjust inputs on one row */
+    .adj-grid { grid-template-columns: auto 1fr 1.15fr auto 1fr 1fr 0.8fr; }
+    #adjBrg { grid-column: auto; }
   }
 </style>
 </head>
@@ -924,12 +998,16 @@
       <button id="clearAll">Clear all</button>
     </div>
 
+    <a class="lf-strip lf-link" id="lfStrip" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
+      <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
+    </a>
+
     <div class="hint">
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
       <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
-      Gun position, grid scale, weapon and mode are remembered.
+      Gun position, grid scale, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
     </div>
 
   </section>
@@ -953,6 +1031,29 @@
           <div class="elev-note" id="elevNote"></div>
         </div>
         <div class="value"><span id="elev">&mdash;</span><span class="u">mil</span></div>
+      </div>
+    </div>
+
+    <div class="adj adv-only" id="adjPanel">
+      <div class="adj-head">
+        <span class="tag">Adjust from impact</span>
+        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
+      </div>
+      <div class="adj-grid">
+        <span class="adj-k">Fired</span>
+        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
+               title="Mil you fired at — filled from the solution until you change it">
+        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
+               title="Bearing you laid — filled from the solution until you change it">
+        <span class="adj-k">Landed</span>
+        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
+               title="Height where it landed — blank = the target's">
+      </div>
+      <div class="adj-out">
+        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
+        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
       </div>
     </div>
 
@@ -1070,28 +1171,22 @@
       </div>
     </div>
 
-    <div class="adj" id="adjPanel">
-      <div class="adj-head">
-        <span class="tag">Adjust from impact</span>
-        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
+    <!-- one standard 300x250 ad space. Filled from AD_CONFIG once AdSense is
+         set up; until then it carries the LobbyForge house ad -->
+    <aside class="ad-slot" id="adSlot" aria-label="Sponsored">
+      <span class="ad-label" id="adLabel">Sponsored</span>
+      <div class="ad-fill" id="adFill">
+        <a class="lf-card lf-link" href="https://lobbyforge.net/" data-utm="house_ad" target="_blank" rel="noopener">
+          <img class="lf-logo" src="https://lobbyforge.net/lf_name_banner.png" alt="LobbyForge"
+               onerror="this.hidden = true; this.nextElementSibling.hidden = false;">
+          <span class="lf-brand" hidden>LobbyForge</span>
+          <span class="lf-head">The Discord LFG bot you design yourself.</span>
+          <span class="lf-copy">Buttons, not commands. Every lobby gets a voice channel with a live
+            roster of who is in it &mdash; build one for your Wardogs squad.</span>
+          <span class="lf-cta">Free to start &middot; lobbyforge.net &rarr;</span>
+        </a>
       </div>
-      <div class="adj-grid">
-        <span class="adj-k">Fired</span>
-        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
-               title="Mil you fired at — filled from the solution until you change it">
-        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
-               title="Bearing you laid — filled from the solution until you change it">
-        <span class="adj-k">Landed</span>
-        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
-        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
-        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
-               title="Height where it landed — blank = the target's">
-      </div>
-      <div class="adj-out">
-        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
-        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
-      </div>
-    </div>
+    </aside>
 
     <div class="cb adv-only" id="cbPanel">
       <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
@@ -2166,6 +2261,57 @@
 
   // the desktop layout has room for it, so it starts open there
   if (CB_ENABLED && deskMQ.matches) setCbOpen(true);
+
+  // ---- ad space ----------------------------------------------------------
+  //
+  // One 300x250 space. With both AdSense IDs filled in it carries AdSense
+  // and LobbyForge moves to the strip in the inputs column; without them it
+  // carries the LobbyForge house ad. Either way LobbyForge shows exactly once.
+  // DEPLOY.md has the AdSense steps (site approval, ads.txt, consent).
+  var AD_CONFIG = {
+    adsenseClient: "",                       // publisher ID, "ca-pub-0000000000000000"
+    adsenseSlot:   "",                       // the ad unit's data-ad-slot number
+    lobbyforgeUrl: "https://lobbyforge.net/",
+    utmSource:     "wardogs-artillery"       // how these visits show in LobbyForge's analytics
+  };
+
+  (function setUpAds() {
+    [].forEach.call(document.querySelectorAll(".lf-link"), function (a) {
+      a.href = AD_CONFIG.lobbyforgeUrl +
+        "?utm_source=" + encodeURIComponent(AD_CONFIG.utmSource) +
+        "&utm_medium=calculator&utm_campaign=" + encodeURIComponent(a.getAttribute("data-utm") || "link");
+    });
+
+    if (!AD_CONFIG.adsenseClient) return;               // no AdSense: house ad stays
+
+    // The script on its own is what AdSense looks for when it checks the
+    // site, and serves nothing by itself (keep Auto ads off: they would push
+    // the layout off the screen). The space switches over once there is an
+    // ad unit to put in it.
+    var js = document.createElement("script");
+    js.async = true;
+    js.crossOrigin = "anonymous";
+    js.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" +
+             encodeURIComponent(AD_CONFIG.adsenseClient);
+    document.head.appendChild(js);
+
+    if (!AD_CONFIG.adsenseSlot) return;                 // approved, no ad unit yet
+
+    var slot = document.getElementById("adSlot"),
+        fill = document.getElementById("adFill"),
+        ins  = document.createElement("ins");
+
+    ins.className = "adsbygoogle ad-host";
+    ins.style.cssText = "display:inline-block;width:300px;height:250px";
+    ins.setAttribute("data-ad-client", AD_CONFIG.adsenseClient);
+    ins.setAttribute("data-ad-slot", AD_CONFIG.adsenseSlot);
+    fill.innerHTML = "";
+    fill.appendChild(ins);
+    slot.classList.add("net");
+    document.getElementById("adLabel").textContent = "Advertisement";
+    document.getElementById("lfStrip").hidden = false;
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  })();
 
   // ---- adjust from impact: the panel ------------------------------------
 

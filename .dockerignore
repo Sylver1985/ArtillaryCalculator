@@ -1,0 +1,8 @@
+# only the page, privacy.html, site/ and deploy/nginx.conf go into the image
+.git
+.github
+.claude
+*.md
+fly.toml
+Dockerfile
+deploy/*.example
