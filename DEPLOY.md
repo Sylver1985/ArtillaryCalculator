@@ -164,8 +164,8 @@ folder.
 ## Cost
 
 Roughly **US$4–7 a month at 50,000 visits a week**: about $3 for the machine
-and $1–4 for bandwidth. Traffic mostly affects the bandwidth part.  Current prices:
-<https://fly.io/docs/about/pricing/>.
+and $1–4 for bandwidth. Traffic mostly affects the bandwidth part. Current
+prices: <https://fly.io/docs/about/pricing/>.
 
 - The machine **stops when nobody is using it** and starts on the next visit,
   so that first visitor waits about a second. To keep it always on, set
