@@ -208,6 +208,19 @@
   }
   .scale select:focus { border-color: var(--accent-dk); }
 
+  /* targeting mode switch */
+  .seg { display: flex; gap: 6px; flex: 1; max-width: 260px; }
+  .seg button { padding: 6px 8px; font-size: 10.5px; }
+  .seg button[aria-pressed="true"] {
+    border-color: var(--accent-dk);
+    color: var(--accent);
+    background: #1f2a25;
+  }
+  /* Simple: flat-ground answers from the table alone, so the height and
+     tilt inputs go (the tilt panel is hidden from script) */
+  .app.simple .asl-field, .app.simple .adv-only { display: none; }
+  .app.simple .fields { grid-template-columns: 1fr 1fr; }
+
   /* ---------- readout ---------- */
 
   .readout {
@@ -477,14 +490,16 @@
     font-size: 10px;
     letter-spacing: 1.5px;
   }
-  text.lean-lbl { fill: #4b5a52; font-family: "Consolas", monospace; font-size: 9px; text-anchor: middle; }
+  text.lean-lbl { fill: #4b5a52; font-family: "Consolas", monospace; font-size: 8px; text-anchor: middle; }
+  .lean-hull  { fill: none; stroke: #4b5a52; stroke-width: 1.2; }
+  .lean-track { stroke: #3c4a44; stroke-width: 2.5; stroke-dasharray: 2.5 1.5; }
 
   @media (max-width: 460px) {
     .lean { grid-template-columns: 1fr; }
     .lean-read { text-align: center; }
   }
 
-  .lean-guides line { stroke: #2f3b36; stroke-width: 1; }
+  .lean-guides line { stroke: #6f8478; stroke-width: 1.4; }   /* the notches */
 
   .lean-sliders {
     grid-column: 1 / -1;
@@ -713,7 +728,7 @@
     }
     .range-box { border-radius: 4px 4px 0 0; }
     .scale { flex-direction: column; align-items: stretch; gap: 6px; }
-    .scale select { max-width: none; }
+    .scale select, .seg { max-width: none; }
   }
 
   /* ---------- desktop: every tool on one screen ---------- */
@@ -765,6 +780,16 @@
       <h1>Artillery &amp; Mortar Calculator</h1>
       <p>A&sup2; + B&sup2; = C&sup2;</p>
     </header>
+
+    <div class="scale">
+      <span>Targeting</span>
+      <div class="seg" role="group" aria-label="Targeting mode">
+        <button type="button" data-mode="simple" aria-pressed="false"
+                title="Flat ground, straight from the firing table">Simple</button>
+        <button type="button" data-mode="advanced" aria-pressed="true"
+                title="Adds target height and gun platform tilt">Advanced</button>
+      </div>
+    </div>
 
     <div class="scale">
       <span>Grid scale</span>
@@ -832,8 +857,8 @@
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
-      <b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br>
-      Gun position, grid scale and weapon are remembered.
+      <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
+      Gun position, grid scale, weapon and mode are remembered.
     </div>
 
   </section>
@@ -913,26 +938,30 @@
 
     <div class="lean" id="leanPanel">
       <span class="tag">Gun platform &mdash; drag to match the in-game indicator</span>
-      <svg viewBox="0 0 220 112" class="lean-svg" id="leanSvg">
+      <!-- laid out like the SPH-2's own gauge, measured off a gunner-view
+           screenshot: a ladder of three notches either side of level, the
+           pitch arrows riding just outside it, and a roll marker either side
+           of the hull. Same proportions, so it can be matched by eye. -->
+      <svg viewBox="38 0 144 112" class="lean-svg" id="leanSvg">
+        <title>Drag across for roll, up and down for pitch</title>
         <g id="leanGuides" class="lean-guides"></g>
 
-        <!-- centre reference: the gun itself -->
-        <line x1="110" y1="48" x2="110" y2="64" stroke="#3c4a44" stroke-width="1"/>
-        <circle cx="110" cy="56" r="2.5" fill="none" stroke="#6f8478" stroke-width="1.2"/>
+        <!-- the hull from above, tracks either side -->
+        <rect x="92" y="32" width="36" height="58" rx="3" class="lean-hull"/>
+        <line x1="97"  y1="36" x2="97"  y2="86" class="lean-track"/>
+        <line x1="123" y1="36" x2="123" y2="86" class="lean-track"/>
 
-        <!-- HORIZON: two segments either side of centre, tilting with ROLL -->
-        <g id="leanHorizon">
-          <line x1="62" y1="56" x2="94"  y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="126" y1="56" x2="158" y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
-        </g>
+        <!-- ROLL: a marker each side of the hull, moving opposite ways -->
+        <line id="leanRollL" x1="64"  y1="56" x2="77"  y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
+        <line id="leanRollR" x1="143" y1="56" x2="156" y2="56" stroke="#f0b23c" stroke-width="2.5" stroke-linecap="round"/>
 
-        <!-- PITCH: inward arrows riding the outer ladders -->
+        <!-- PITCH: inward arrows riding outside the ladders -->
         <g id="leanArrows">
-          <path d="M32 50 L44 56 L32 62 Z" fill="#7dd87d"/>
-          <path d="M188 50 L176 56 L188 62 Z" fill="#7dd87d"/>
+          <path d="M40 52 L47 56 L40 60 Z" fill="#7dd87d"/>
+          <path d="M180 52 L173 56 L180 60 Z" fill="#7dd87d"/>
         </g>
 
-        <text x="110" y="105" class="lean-lbl">drag &#8596; roll &nbsp;&middot;&nbsp; &#8597; pitch</text>
+        <text id="leanLbl" x="110" y="107" class="lean-lbl"></text>
       </svg>
       <div class="lean-read">
         <div class="lean-row">
@@ -1166,6 +1195,11 @@
     try { return localStorage.getItem(key); } catch (e) { return null; }
   }
 
+  // Simple: flat ground, straight from the firing table — the calculator as it
+  // was before target height and platform tilt. Advanced adds both.
+  var mode = "advanced";
+  function advanced() { return mode === "advanced"; }
+
   // ---- the maths --------------------------------------------------------
 
   // Wardogs mils sit on a 6400-mil circle, so 1 mil = 0.05625°.
@@ -1276,8 +1310,9 @@
   }
 
   // target height relative to the gun. A blank ASL counts as 0, so a gun
-  // height on its own still corrects; null only when both are blank
+  // height on its own still corrects; null when both are blank, or in Simple
   function heightDiff() {
+    if (!advanced()) return null;
     var h1 = num(gunAslEl), h2 = num(tgtAslEl);
     if (h1 === null && h2 === null) return null;
     return (h2 || 0) - (h1 || 0);
@@ -1643,10 +1678,16 @@
       pitchDeg = 0,       // + = nose up
       cantAzOffset = 0;   // degrees to subtract from the bearing
 
-  // NOTE: these full-scale limits are a guess — the in-game indicator carries
-  // no published scale. The correction maths is sound; the degree readings
-  // depend on this calibration.
-  var ROLL_MAX = 25, PITCH_MAX = 25;
+  // The SPH-2 gauge reads in notches, three either side of level. Nothing
+  // published says what a notch is worth; about 10° comes from two test shots
+  // from one tilted spot, where the impacts put roll at 3.5° and pitch at 2.9°
+  // and the gauge showed "barely a third of a notch" on both. If shots still
+  // drift, re-measure on a slope and change DEG_PER_NOTCH — everything else
+  // (ladders, drag, slider limits) follows from it.
+  var DEG_PER_NOTCH = 10, NOTCHES = 3,
+      NOTCH_PX  = 13,                      // notch spacing in the drawing, SVG units
+      ROLL_MAX  = NOTCHES * DEG_PER_NOTCH,
+      PITCH_MAX = NOTCHES * DEG_PER_NOTCH;
 
   var rollRange   = document.getElementById("rollRange"),
       pitchRange  = document.getElementById("pitchRange"),
@@ -1659,46 +1700,30 @@
   pitchRange.min = -PITCH_MAX; pitchRange.max = PITCH_MAX;
 
   var leanSvg     = document.getElementById("leanSvg"),
-      leanHorizon = document.getElementById("leanHorizon"),
+      leanRollL   = document.getElementById("leanRollL"),
+      leanRollR   = document.getElementById("leanRollR"),
       leanArrows  = document.getElementById("leanArrows"),
       hullEl      = document.getElementById("hullDeg"),
       leanFixEl   = document.getElementById("leanFix");
 
-  // faint reference marks: a protractor fan for roll, rails for pitch.
-  // Built from ROLL_MAX/PITCH_MAX rather than hard-coded, so they stay honest
-  // if the calibration changes.
+  // the two notch ladders, level in the middle and NOTCHES either side,
+  // spaced as on the in-game gauge
   (function buildGuides() {
-    var parts = [], a, p, rad, s, y, i;
-
-    // roll: a short protractor fan just outboard of the horizon segments
-    for (a = -ROLL_MAX; a <= ROLL_MAX + 1e-6; a += 5) {
-      if (Math.abs(a) < 1e-6) continue;          // zero already has its own mark
-      rad = a * Math.PI / 180;
-      for (i = 0; i < 2; i++) {
-        s = i ? -1 : 1;
-        parts.push('<line x1="' + (110 + s * 64 * Math.cos(rad)).toFixed(1) +
-                   '" y1="' + (56 + s * 64 * Math.sin(rad)).toFixed(1) +
-                   '" x2="' + (110 + s * 70 * Math.cos(rad)).toFixed(1) +
-                   '" y2="' + (56 + s * 70 * Math.sin(rad)).toFixed(1) + '"/>');
-      }
+    var parts = [], k, y;
+    for (k = -NOTCHES; k <= NOTCHES; k++) {
+      y = (56 + k * NOTCH_PX).toFixed(1);
+      parts.push('<line x1="49" y1="' + y + '" x2="55" y2="' + y + '"/>');
+      parts.push('<line x1="165" y1="' + y + '" x2="171" y2="' + y + '"/>');
     }
-
-    // pitch: the vertical ladders the arrows ride, as in the gunner sight
-    for (p = -PITCH_MAX; p <= PITCH_MAX + 1e-6; p += 5) {
-      if (Math.abs(p) < 1e-6) continue;
-      y = (56 - (p / PITCH_MAX) * 26).toFixed(1);
-      var long_ = Math.abs(p % 10) < 1e-6;       // every 10 deg reads longer
-      parts.push('<line x1="' + (long_ ? 16 : 20) + '" y1="' + y + '" x2="28" y2="' + y + '"/>');
-      parts.push('<line x1="192" y1="' + y + '" x2="' + (long_ ? 204 : 200) + '" y2="' + y + '"/>');
-    }
-
     document.getElementById("leanGuides").innerHTML = parts.join("");
+    document.getElementById("leanLbl").textContent =
+      "1 notch = " + DEG_PER_NOTCH + "° · drag to match";
   })();
 
   // The L81 is an emplaced mortar on a baseplate — there is no chassis to sit
-  // crooked, so tilt neither applies nor is shown.
+  // crooked, so tilt neither applies nor is shown. Simple mode leaves it out.
   function tiltApplies() {
-    return weaponEl.value !== "mortar";
+    return advanced() && weaponEl.value !== "mortar";
   }
 
   function updateLeanVisibility() {
@@ -1706,12 +1731,13 @@
   }
 
   function drawLean() {
-    // SVG y grows downward, so a POSITIVE rotation drops the right-hand end —
-    // which is what "right side down" has to look like
-    leanHorizon.setAttribute("transform",
-      "rotate(" + rollDeg.toFixed(2) + " 110 56)");
-    leanArrows.setAttribute("transform",
-      "translate(0 " + (-(pitchDeg / PITCH_MAX) * 26).toFixed(2) + ")");
+    // everything moves in notches, as on the gauge. SVG y grows downward, so
+    // nose up lifts the arrows (negative y) and right side down drops the
+    // right-hand roll marker while the left one rises
+    var perDeg = NOTCH_PX / DEG_PER_NOTCH;
+    leanArrows.setAttribute("transform", "translate(0 " + (-pitchDeg * perDeg).toFixed(2) + ")");
+    leanRollR.setAttribute("transform",  "translate(0 " + ( rollDeg  * perDeg).toFixed(2) + ")");
+    leanRollL.setAttribute("transform",  "translate(0 " + (-rollDeg  * perDeg).toFixed(2) + ")");
 
     var rv = document.getElementById("leanRollVal"),
         pv = document.getElementById("leanPitchVal");
@@ -1741,16 +1767,19 @@
     calc();
   }
 
-  // one 2-D drag: across = roll, up/down = pitch
+  // one 2-D drag: up/down = pitch, with the arrows following the pointer
+  // notch for notch; across = roll, a ladder's distance out being full scale.
+  // The pointer is mapped through the viewBox and its letterboxing (the
+  // drawing is centred, not stretched), so it lands where the picture is.
   function leanFromEvent(e) {
-    var r = leanSvg.getBoundingClientRect(),
-        cx = r.left + r.width * (110 / 220),
-        cy = r.top + r.height * (56 / 112),
-        halfW = r.width * (90 / 220),
-        halfH = r.height * (34 / 112);
+    var r  = leanSvg.getBoundingClientRect(),
+        vb = leanSvg.viewBox.baseVal,
+        s  = Math.min(r.width / vb.width, r.height / vb.height),
+        x  = vb.x + (e.clientX - r.left - (r.width  - vb.width  * s) / 2) / s,
+        y  = vb.y + (e.clientY - r.top  - (r.height - vb.height * s) / 2) / s;
 
-    setTilt((e.clientX - cx) / halfW * ROLL_MAX,
-            -(e.clientY - cy) / halfH * PITCH_MAX);
+    setTilt((x - 110) / 58 * ROLL_MAX,
+            -(y - 56) / NOTCH_PX * DEG_PER_NOTCH);
   }
 
   var leanDragging = false;
@@ -2036,6 +2065,26 @@
     calc();
   });
 
+  // ---- targeting mode ---------------------------------------------------
+
+  var appEl    = document.querySelector(".app"),
+      modeBtns = [].slice.call(document.querySelectorAll(".seg button"));
+
+  function setMode(m) {
+    mode = m === "simple" ? "simple" : "advanced";
+    appEl.classList.toggle("simple", mode === "simple");
+    modeBtns.forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-mode") === mode ? "true" : "false");
+    });
+    store("mode", mode);
+    updateLeanVisibility();
+    calc();
+  }
+
+  modeBtns.forEach(function (b) {
+    b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); });
+  });
+
   // restore gun position
   ["ax", "ay", "gunAsl"].forEach(function (k) {
     var v = load(k);
@@ -2050,6 +2099,8 @@
 
   var savedWeapon = load("weapon");
   if (savedWeapon && WEAPONS[savedWeapon]) weaponEl.value = savedWeapon;
+
+  setMode(load("mode"));        // remembered like the weapon; Advanced if unset
 
   updateLeanVisibility();
   drawLean();
