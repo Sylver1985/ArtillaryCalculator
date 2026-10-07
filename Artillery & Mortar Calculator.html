@@ -80,7 +80,7 @@
   }
   .col { display: contents; }
   .lean { order: 1; }
-  .readout, .visuals, .working { order: 2; }
+  .readout, .visuals, .working, .adj { order: 2; }
   .cb { order: 3; }
   .actions, .hint { order: 4; }
 
@@ -577,6 +577,71 @@
     box-shadow: 0 0 0 2px var(--accent);
   }
 
+  /* ---------- adjust from impact ---------- */
+
+  .adj {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 14px 12px;
+  }
+  .adj.on { border-color: var(--accent-dk); }      /* an adjustment is in force */
+  .adj-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .adj-head .tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .adj-btn {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 10px;
+  }
+  .adj-btn[disabled] { opacity: .35; cursor: not-allowed; }
+  .adj-btn[disabled]:hover { border-color: var(--line); color: var(--dim); }
+  /* Fired: mil | bearing (wide) ; Landed: X | Y | ASL */
+  .adj-grid {
+    display: grid;
+    grid-template-columns: 52px 1fr 1fr 1fr;
+    gap: 6px;
+    align-items: center;
+  }
+  #adjBrg { grid-column: span 2; }
+  .adj-k { font-size: 10px; letter-spacing: 1px; color: var(--dim); text-transform: uppercase; }
+  .adj input {
+    width: 100%;
+    min-width: 0;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+    padding: 6px 8px;
+    outline: none;
+  }
+  .adj input:focus { border-color: var(--accent-dk); background: #1f2a25; }
+  .adj input::placeholder { color: #38453f; font-weight: 400; font-size: 11px; }
+  .adj input::-webkit-outer-spin-button,
+  .adj input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .adj input[type=number] { -moz-appearance: textfield; }
+  .adj-out {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 9px;
+  }
+  .adj-msg { flex: 1; font-size: 12px; line-height: 1.5; color: var(--dim); min-height: 18px; }
+  .adj-msg .hl { color: var(--accent); font-weight: 700; }
+
   /* ---------- counter-battery ---------- */
 
   .cb {
@@ -1005,6 +1070,29 @@
       </div>
     </div>
 
+    <div class="adj" id="adjPanel">
+      <div class="adj-head">
+        <span class="tag">Adjust from impact</span>
+        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
+      </div>
+      <div class="adj-grid">
+        <span class="adj-k">Fired</span>
+        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
+               title="Mil you fired at — filled from the solution until you change it">
+        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
+               title="Bearing you laid — filled from the solution until you change it">
+        <span class="adj-k">Landed</span>
+        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
+               title="Height where it landed — blank = the target's">
+      </div>
+      <div class="adj-out">
+        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
+        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
+      </div>
+    </div>
+
     <div class="cb adv-only" id="cbPanel">
       <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
         <span>Counter-battery &mdash; locate enemy gun</span><span class="chev">&#9662;</span>
@@ -1078,7 +1166,8 @@
       workingEl   = document.getElementById("working"),
       toastEl     = document.getElementById("toast");
 
-  var lastHeight = null,      // height solve behind the current solution, if any
+  var lastAdj    = null,      // impact adjustment behind the current solution, if any
+      lastHeight = null,      // height solve behind the current solution, if any
       lastRange = null,
       lastDeg   = null,
       lastElev  = null;
@@ -1275,11 +1364,12 @@
   // near maximum range can't pick up the other arc's root.
   //   -> { mil, flat }  flat = the level-ground range it is laid as
   //   -> { mil: null, tooFar }
-  var heightMemo = { key: null, val: null };
+  // a few answers kept: the target and an impact get solved turn about
+  var heightMemo = {}, heightMemoSize = 0;
 
   function heightSolve(w, r, dh) {
-    var key = weaponEl.value + "|" + r + "|" + dh;
-    if (heightMemo.key === key) return heightMemo.val;
+    var key = w.name + "|" + r + "|" + dh;
+    if (heightMemo.hasOwnProperty(key)) return heightMemo[key];
 
     function miss(m) {                  // > 0 overshoots, < 0 falls short
       var s = heightShift(w.ballistics, m, dh), rt = rangeAtMil(w, m);
@@ -1311,7 +1401,8 @@
     }
     if (!val) val = { mil: null, tooFar: allShort };
 
-    heightMemo = { key: key, val: val };
+    if (++heightMemoSize > 40) { heightMemo = {}; heightMemoSize = 1; }
+    heightMemo[key] = val;
     return val;
   }
 
@@ -1322,6 +1413,53 @@
     var h1 = num(gunAslEl), h2 = num(tgtAslEl);
     if (h1 === null && h2 === null) return null;
     return (h2 || 0) - (h1 || 0);
+  }
+
+  // the dial a LEVEL platform needs to land at range r, dh above the gun:
+  // the table, plus the height solve where the weapon has a model. null when
+  // out of reach. The tilt-free core of showElevation, shared with the
+  // impact adjustment.
+  function levelMil(w, r, dh) {
+    if (dh !== null && dh !== 0 && w.ballistics) return heightSolve(w, r, dh).mil;
+    if (r < w.min || r > w.max) return null;
+    return elevationFor(w, r);
+  }
+
+  // ---- adjust from impact -----------------------------------------------
+  //
+  // Where a round actually lands says what the platform did to it. Fired at
+  // dial M and bearing B, it came down where a level gun would need dial M0
+  // and bearing B0: so from this spot the platform adds (M - M0) mil and
+  // (B - B0)°, whatever the tilt and however the gauge was read. The next
+  // solution is the target's level one plus those two offsets. Each applied
+  // impact replaces the last, so firing the adjusted data and logging that
+  // impact refines it.
+  //
+  // It is only good for the spot it was measured from: moving the gun or
+  // changing weapon drops it, and a target more than ADJ_SPAN_DEG or
+  // ADJ_SPAN_RANGE away from the impact doesn't get it.
+  var adj = null,             // { dM, dB, range, bearing, weapon, gun }
+      adjFar = false,         // set when adj exists but this target is outside its span
+      ADJ_SPAN_DEG = 20, ADJ_SPAN_RANGE = 0.3;
+
+  function gunKey() {
+    return [ax.value, ay.value, gunAslEl.value, scaleEl.value].join("|");
+  }
+
+  // the adjustment to use for a target at range r, bearing deg — or null
+  function activeAdj(r, deg) {
+    adjFar = false;
+    if (!adj || !advanced()) return null;
+    if (adj.weapon !== weaponEl.value || adj.gun !== gunKey()) {   // moved: start over
+      adj = null;
+      return null;
+    }
+    var dB = Math.abs(((deg - adj.bearing) % 360 + 540) % 360 - 180);
+    if (dB > ADJ_SPAN_DEG || Math.abs(r / adj.range - 1) > ADJ_SPAN_RANGE) {
+      adjFar = true;
+      return null;
+    }
+    return adj;
   }
 
   var GUN_X = 26, GROUND_Y = 100, TGT_X = 176, BARREL_LEN = 40;
@@ -1381,6 +1519,7 @@
     cantAzOffset = 0;
     leanFixEl.innerHTML = "";
     lastHeight = null;
+    lastAdj = null;
 
     if (r === null) {
       lastElev = null;
@@ -1435,15 +1574,34 @@
       }
     }
 
+    // an impact logged from this spot measures what the platform does, so
+    // where one applies it stands in for the tilt model entirely
+    var a = lastAdj = activeAdj(r, bearingDeg);
+
     // --- platform tilt correction ----------------------------------------
     var tilt   = boreTilt(bearingDeg),
         phi    = tilt.cant,
         eTable = mil * MIL_TO_DEG * Math.PI / 180,
         eWant  = eTable - tilt.along,   // the slope already gives you `along`
-        milSet = mil,
+        milSet = a ? mil + a.dM : mil,
         leanMsg = "";
 
-    if (tiltApplies() && (Math.abs(rollDeg) >= 0.05 || Math.abs(pitchDeg) >= 0.05)) {
+    if (a) {
+      if (Math.round(milSet) < w.sight.min || Math.round(milSet) > w.sight.max) {
+        lastElev = null;
+        elevBoxEl.classList.add("out");
+        elevEl.textContent = "OUT OF RANGE";
+        elevNoteEl.innerHTML = envelope + " &mdash; adjusted from impact, the shot needs " +
+          fmt(Math.round(milSet), 0) + " mil, outside the " + fmt(w.sight.min, 0) +
+          "&ndash;" + fmt(w.sight.max, 0) + " mil sight";
+        drawElevation(null);
+        visElevEl.textContent = "out of range";
+        return;
+      }
+      cantAzOffset = -a.dB;             // calc() lays off deg - cantAzOffset
+    }
+
+    if (!a && tiltApplies() && (Math.abs(rollDeg) >= 0.05 || Math.abs(pitchDeg) >= 0.05)) {
       var sinSet = Math.sin(eWant) / Math.cos(phi),
           milTry = eWant <= 0 ? -Infinity
                  : sinSet < 1 ? Math.asin(sinSet) / MIL_TO_DEG * 180 / Math.PI
@@ -1503,11 +1661,14 @@
     lastElev = milSet;
     elevBoxEl.classList.remove("out");
     elevEl.textContent = String(Math.round(milSet));
+    if (a && tiltApplies()) leanFixEl.innerHTML = "not used &mdash; adjusted from impact";
+
     var fixes = [];
     if (lastHeight) fixes.push("height");
     if (leanMsg)    fixes.push("platform tilt");
     elevNoteEl.innerHTML = envelope +
-      (fixes.length ? " &mdash; corrected for " + fixes.join(" and ") : "");
+      (fixes.length ? " &mdash; corrected for " + fixes.join(" and ") : "") +
+      (a ? (fixes.length ? ", " : " &mdash; ") + "adjusted from impact" : "");
 
     var degs = milSet * MIL_TO_DEG;
     drawElevation(degs);
@@ -1515,6 +1676,11 @@
   }
 
   function calc() {
+    solve();
+    adjUpdate();
+  }
+
+  function solve() {
     var x1 = num(ax), y1 = num(ay),
         x2 = num(bx), y2 = num(by);
 
@@ -1571,8 +1737,8 @@
     lastDeg = degAim;
 
     bearingEl.textContent = fmt(degAim, 1);
-    degNoteEl.textContent = compassPoint(degAim) +
-      (cantAzOffset ? "  — lean-corrected from " + fmt(deg, 1) + "°" : "");
+    degNoteEl.textContent = compassPoint(degAim) + (!cantAzOffset ? "" :
+      (lastAdj ? "  — impact-adjusted from " : "  — lean-corrected from ") + fmt(deg, 1) + "°");
     needleEl.style.transform = "rotate(" + degAim + "deg)";
     visDirEl.innerHTML = fmt(degAim, 1) + "&deg; &nbsp;" + compassPoint(degAim);
 
@@ -1836,6 +2002,11 @@
 
   // ---- counter-battery triangulation -----------------------------------
 
+  // Switched off for now: nobody is using it. The panel and its maths are all
+  // still here; set this to true to bring the panel back.
+  var CB_ENABLED = false;
+  document.getElementById("cbPanel").hidden = !CB_ENABLED;
+
   // Each observation is a ray: start at the observer, run along the bearing the
   // fire came FROM. Where two rays cross is the tube. Bearings are clockwise
   // from grid north, so the direction vector is (sin, cos), not (cos, sin).
@@ -1994,7 +2165,126 @@
   fitToScreen();
 
   // the desktop layout has room for it, so it starts open there
-  if (deskMQ.matches) setCbOpen(true);
+  if (CB_ENABLED && deskMQ.matches) setCbOpen(true);
+
+  // ---- adjust from impact: the panel ------------------------------------
+
+  var adjPanelEl = document.getElementById("adjPanel"),
+      adjMilEl   = document.getElementById("adjMil"),
+      adjBrgEl   = document.getElementById("adjBrg"),
+      adjXEl     = document.getElementById("adjX"),
+      adjYEl     = document.getElementById("adjY"),
+      adjAslEl   = document.getElementById("adjAsl"),
+      adjMsgEl   = document.getElementById("adjMsg"),
+      adjApplyEl = document.getElementById("adjApply"),
+      adjFiredTouched = false,    // user typed their own Fired values
+      adjPending = null;          // the logged round, ready to apply
+
+  function wrap180(d) { return ((d % 360) + 540) % 360 - 180; }
+
+  // the round in the panel, measured against the current target: what the
+  // platform added to it and what the next round should be. null while the
+  // panel or the gun/target is incomplete.
+  function adjRead() {
+    var w  = WEAPONS[weaponEl.value] || WEAPONS.mortar,
+        k  = parseFloat(scaleEl.value) || 1,
+        v  = [num(ax), num(ay), num(bx), num(by), num(adjMilEl), num(adjBrgEl), num(adjXEl), num(adjYEl)],
+        i;
+    for (i = 0; i < v.length; i++) if (v[i] === null) return null;
+
+    var x1 = v[0], y1 = v[1],
+        rt = Math.hypot((v[2] - x1) * k, (v[3] - y1) * k),
+        bt = normBearing(Math.atan2((v[2] - x1) * k, (v[3] - y1) * k) * 180 / Math.PI),
+        ri = Math.hypot((v[6] - x1) * k, (v[7] - y1) * k),
+        bi = normBearing(Math.atan2((v[6] - x1) * k, (v[7] - y1) * k) * 180 / Math.PI),
+        // where it landed is taken to be at the target's height unless given
+        hi = num(adjAslEl),
+        dhT = heightDiff(),
+        dhI = hi === null || !advanced() ? dhT : hi - (num(gunAslEl) || 0),
+        mT = levelMil(w, rt, dhT),
+        mI = levelMil(w, ri, dhI);
+
+    if (mI === null) return { error: "That impact is outside the firing table &mdash; check its X/Y." };
+    if (mT === null) return { error: "The target itself is out of reach." };
+
+    var dM = v[4] - mI, dB = wrap180(v[5] - bi);
+    return {
+      dM: dM, dB: dB, range: ri, bearing: bi,
+      long: ri - rt,
+      side: rt * Math.sin(wrap180(bi - bt) * Math.PI / 180),
+      mil: mT + dM, brg: normBearing(bt + dB)
+    };
+  }
+
+  function adjUpdate() {
+    var impactEmpty = adjXEl.value.trim() === "" && adjYEl.value.trim() === "",
+        p, msg;
+
+    // "Fired" follows the solution on screen — the data you are about to fire —
+    // until you type your own, and freezes once an impact is being entered
+    if (!adjFiredTouched && impactEmpty) {
+      adjMilEl.value = lastElev === null ? "" : String(Math.round(lastElev));
+      adjBrgEl.value = lastDeg  === null ? "" : String(Math.round(lastDeg * 10) / 10);
+    }
+
+    p = impactEmpty ? null : adjRead();
+    adjPending = p && !p.error ? p : null;
+    adjApplyEl.disabled = !adjPending;
+    adjPanelEl.classList.toggle("on", !!lastAdj);
+
+    if (p && p.error) {
+      msg = p.error;
+    } else if (p) {
+      msg = "Landed " + fmt(Math.abs(p.long), 0) + " m " + (p.long >= 0 ? "long" : "short") + ", " +
+            fmt(Math.abs(p.side), 0) + " m " + (p.side >= 0 ? "right" : "left") +
+            " &rarr; next <span class=\"hl\">" + Math.round(p.mil) + " mil &middot; " +
+            fmt(p.brg, 1) + "&deg;</span>";
+    } else if (!impactEmpty) {
+      msg = "Enter the gun, target, what you fired and both X and Y of the impact.";
+    } else if (lastAdj) {
+      msg = "In use: the platform adds <span class=\"hl\">" + (lastAdj.dM >= 0 ? "+" : "") +
+            fmt(Math.round(lastAdj.dM), 0) + " mil, " + (lastAdj.dB >= 0 ? "+" : "") +
+            fmt(lastAdj.dB, 1) + "&deg;</span> here. Log the next impact to refine it.";
+    } else if (adjFar) {
+      msg = "Measured near " + fmt(adj.bearing, 0) + "&deg; / " + fmt(adj.range, 0) +
+            " m &mdash; too far from this target to use.";
+    } else {
+      msg = "Fire, then enter where the round landed.";
+    }
+    adjMsgEl.innerHTML = msg;
+  }
+
+  function adjApply() {
+    if (!adjPending) return;
+    adj = { dM: adjPending.dM, dB: adjPending.dB, range: adjPending.range,
+            bearing: adjPending.bearing, weapon: weaponEl.value, gun: gunKey() };
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";
+    adjFiredTouched = false;
+    calc();
+    if (lastElev !== null && lastDeg !== null)
+      toast("Next round " + Math.round(lastElev) + " mil, " + fmt(lastDeg, 1) + "°");
+  }
+
+  function adjClear() {
+    adj = null;
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";
+    adjFiredTouched = false;
+    calc();
+  }
+
+  [adjMilEl, adjBrgEl, adjXEl, adjYEl, adjAslEl].forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (el === adjMilEl || el === adjBrgEl) adjFiredTouched = true;
+      adjUpdate();
+    });
+    el.addEventListener("focus", function () { el.select(); });
+    el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); adjApply(); }
+    });
+  });
+  adjApplyEl.addEventListener("click", adjApply);
+  document.getElementById("adjClear").addEventListener("click", adjClear);
 
   document.getElementById("cbUse").addEventListener("click", function () {
     if (!cbFix) return;
@@ -2021,6 +2311,7 @@
     bx.value = "";
     by.value = "";
     tgtAslEl.value = "";
+    adjXEl.value = adjYEl.value = adjAslEl.value = "";   // that impact was the old target's
     calc();
     bx.focus();
   }
@@ -2030,7 +2321,7 @@
   document.getElementById("clearAll").addEventListener("click", function () {
     inputs.concat(gunAslEl, tgtAslEl).forEach(function (el) { el.value = ""; });
     store("ax", ""); store("ay", ""); store("gunAsl", "");
-    calc();
+    adjClear();
     ax.focus();
   });
 
