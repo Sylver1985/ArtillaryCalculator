@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Artillery &amp; Mortar Range Calculator</title>
+<title>Wardogs Artillery &amp; Mortar Calculator</title>
+<meta name="description" content="Range, bearing and mils for the Wardogs L81 mortar and SPH-2, with target-height and platform-tilt correction and adjust-from-impact.">
+<meta name="theme-color" content="#0d1110">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230d1110%27/%3E%3Cpath d=%27M5 25 L14 13%27 stroke=%27%23f0b23c%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M7 25 Q16 1 27 25%27 fill=%27none%27 stroke=%27%237dd87d%27 stroke-width=%272%27 stroke-dasharray=%273 2%27/%3E%3C/svg%3E">
 <style>
   :root {
     --bg:        #0d1110;
@@ -61,7 +64,7 @@
   }
 
   /* frosted panels read as a HUD over the photo rather than flat cards */
-  .scale, .pos, .readout, .vis, .working, .actions button {
+  .setting, .pos, .readout, .vis, .working, .actions button {
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
   }
@@ -81,8 +84,9 @@
   .col { display: contents; }
   .lean { order: 1; }
   .readout, .visuals, .working, .adj { order: 2; }
-  .cb { order: 3; }
-  .actions, .hint { order: 4; }
+  .cb, .ad-slot { order: 3; }
+  .home .ad-slot { order: 0; }        /* on the chooser it sits beside the tool cards */
+  .actions, .lf-strip, .hint { order: 4; }
 
   header {
     text-align: center;
@@ -174,9 +178,9 @@
   .asl-field input { font-size: 16px; padding-left: 44px; }
   .asl-field input::placeholder { font-size: 11px; }
 
-  /* ---------- grid scale ---------- */
+  /* ---------- setting rows: targeting mode, weapon ---------- */
 
-  .scale {
+  .setting {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -186,14 +190,14 @@
     border-radius: 4px;
     padding: 9px 14px;
   }
-  .scale > span {
+  .setting > span {
     font-size: 10px;
     letter-spacing: 2px;
     color: var(--dim);
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .scale select {
+  .setting select {
     background: var(--panel-2);
     border: 1px solid var(--line);
     border-radius: 3px;
@@ -206,7 +210,7 @@
     flex: 1;
     max-width: 260px;
   }
-  .scale select:focus { border-color: var(--accent-dk); }
+  .setting select:focus { border-color: var(--accent-dk); }
 
   /* targeting mode switch */
   .seg { display: flex; gap: 6px; flex: 1; max-width: 260px; }
@@ -216,10 +220,10 @@
     color: var(--accent);
     background: #1f2a25;
   }
-  /* Simple: flat-ground answers from the table alone, so the height inputs
-     and counter-battery go, and the tilt panel is hidden from script —
-     which leaves the tools column empty, so it goes too */
-  .app.simple .asl-field, .app.simple .adv-only, .app.simple .col-tools { display: none; }
+  /* Simple: flat-ground answers from the table alone, so the height inputs,
+     impact adjustment and counter-battery go, and the tilt panel is hidden
+     from script — leaving the tools column with just the ad space */
+  .app.simple .asl-field, .app.simple .adv-only { display: none; }
   .app.simple .fields { grid-template-columns: 1fr 1fr; }
 
   /* ---------- readout ---------- */
@@ -642,6 +646,234 @@
   .adj-msg { flex: 1; font-size: 12px; line-height: 1.5; color: var(--dim); min-height: 18px; }
   .adj-msg .hl { color: var(--accent); font-weight: 700; }
 
+  /* ---------- ad space and LobbyForge ---------- */
+
+  .ad-slot {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 7px 10px 10px;
+  }
+  .ad-label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #4b5a52;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ad-fill {
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* A network ad keeps its real 300x250 whatever the page's fit-to-screen
+     zoom: scaling someone else's ad is both ugly and against ad-network
+     rules, so the zoom is undone here and the space sized to match. */
+  .ad-slot.net .ad-fill { min-height: calc(250px / var(--fit, 1)); }
+  .ad-host { zoom: calc(1 / var(--fit, 1)); }
+
+  /* LobbyForge: Discord blurple, so it reads as a different product */
+  .lf-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 250px;
+    padding: 18px 20px;
+    border: 1px solid #3c4170;
+    border-radius: 4px;
+    background: linear-gradient(160deg, rgba(88, 101, 242, 0.20), rgba(21, 27, 25, 0.55) 70%);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color .12s;
+  }
+  .lf-card:hover { border-color: #5865f2; }
+  .lf-logo { display: block; height: 26px; width: auto; max-width: 100%; object-fit: contain; object-position: left; color: #aab1ff; font-weight: 700; font-size: 16px; }
+  .lf-brand { font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #aab1ff; }
+  .lf-head { font-size: 16px; font-weight: 700; line-height: 1.35; color: #e6e8ff; }
+  .lf-copy { font-size: 12px; line-height: 1.6; color: var(--dim); }
+  .lf-cta {
+    align-self: flex-start;
+    background: #5865f2;
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    border-radius: 3px;
+  }
+  .lf-strip {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #3c4170;
+    border-radius: 4px;
+    background: rgba(88, 101, 242, 0.12);
+    color: var(--text);
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .lf-strip b { color: #aab1ff; }
+  .lf-strip:hover { border-color: #5865f2; }
+  .hint a { color: var(--dim); }
+
+  /* "Advertise here": the space is for sale */
+  .adv-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 250px;
+    padding: 18px 20px;
+    border: 1px dashed #3c4a44;
+    border-radius: 4px;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color .12s;
+  }
+  .adv-card:hover { border-color: var(--accent-dk); }
+  .adv-k { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
+  .adv-head { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .adv-copy { font-size: 12px; line-height: 1.6; color: var(--dim); }
+  .adv-cta { font-size: 11px; letter-spacing: 1px; color: var(--accent); }
+
+  /* a paid sponsor's own 300x250 creative */
+  .sponsor-link { display: block; line-height: 0; }
+  .sponsor-link img { display: block; width: 300px; height: 250px; max-width: 100%; object-fit: contain; }
+
+  /* ---------- pages: top bar, tool chooser ---------- */
+
+  .topnav {
+    order: -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 6px 8px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  .nav-brand {
+    margin-right: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .nav-tab {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: color .12s, border-color .12s;
+  }
+  .nav-tab:hover { color: var(--accent); border-color: var(--line); }
+  .nav-tab[aria-current="page"] { color: var(--accent); border-color: var(--accent-dk); background: #1f2a25; }
+  .nav-support, .nav-support:hover { color: var(--amber); }
+
+  /* each page shows only its own parts */
+  .app.page-home .col { display: none; }
+  .app.page-sph2 [data-slot="side-2"] { display: none; }
+
+  .home { display: grid; gap: 10px; }
+  .tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px 22px 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--text);
+    text-decoration: none;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: border-color .12s;
+  }
+  .tool-card:hover { border-color: var(--accent-dk); }
+  .tool-k { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
+  .tool-name { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; color: var(--accent); }
+  .tool-range { font-size: 12px; color: var(--amber); }
+  .tool-copy { font-size: 13px; line-height: 1.6; color: var(--dim); flex: 1; }
+  .tool-go {
+    align-self: flex-start;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent-dk);
+    border-radius: 3px;
+    padding: 8px 14px;
+  }
+  .home-support {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--dim);
+  }
+  .home-support p { margin: 0; flex: 1; }
+  .home-support b { color: var(--text); }
+  .home-support-btn { flex: 0 0 auto; padding: 8px 16px; color: var(--amber); }
+
+  /* ---------- support (donations) ---------- */
+
+  .support-dlg {
+    width: min(440px, calc(100vw - 32px));
+    padding: 22px 24px 18px;
+    background: var(--panel-solid);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .support-dlg::backdrop { background: rgba(5, 8, 7, 0.72); }
+  .support-dlg h2 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .support-dlg p { margin: 0 0 10px; color: var(--dim); }
+  .donate-btn {
+    display: block;
+    margin: 16px 0 6px;
+    padding: 11px;
+    text-align: center;
+    background: #ffc439;           /* PayPal's own button yellow */
+    color: #111;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  .donate-btn:hover { background: #f2b52e; }
+  .donate-soon { text-align: center; color: var(--dim); font-style: italic; }
+  .support-dlg form { margin: 10px 0 0; text-align: right; }
+  .dlg-close { flex: 0 0 auto; padding: 6px 14px; font-size: 10px; }
+
   /* ---------- counter-battery ---------- */
 
   .cb {
@@ -793,14 +1025,14 @@
       border-radius: 0 0 4px 4px;
     }
     .range-box { border-radius: 4px 4px 0 0; }
-    .scale { flex-direction: column; align-items: stretch; gap: 6px; }
-    .scale select, .seg { max-width: none; }
+    .setting { flex-direction: column; align-items: stretch; gap: 6px; }
+    .setting select, .seg { max-width: none; }
   }
 
   /* ---------- desktop: every tool on one screen ---------- */
 
   /* inputs | solution | tools. The layout is drawn for a window of about
-     1250×640 and fitToScreen() scales it as a whole (--fit, via zoom) to fill
+     1250×690 and fitToScreen() scales it as a whole (--fit, via zoom) to fill
      whichever of height or width runs out first — so it fills a 1440p screen
      and still fits a 1366×768 laptop once the browser takes its share. The
      two diagrams soak up whatever height is left over. zoom scales the vh in
@@ -812,14 +1044,19 @@
       max-width: 1480px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+      grid-template-rows: auto 1fr;      /* the top bar, then the page */
       gap: 14px;
       min-height: calc((100vh - 28px) / var(--fit, 1));
     }
-    /* Simple drops the tools column: the other two keep their widths */
-    .app.simple {
-      max-width: 1000px;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    .topnav { grid-column: 1 / -1; }
+    .home {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+      align-content: start;
+      gap: 14px;
     }
+    .home-support, .home .lf-strip { grid-column: 1 / -1; }
+    .support-dlg { zoom: var(--fit, 1); }     /* it sits outside .app, so scale it to match */
     .col {
       display: flex;
       flex-direction: column;
@@ -833,9 +1070,13 @@
 
     /* the drawings would size their height off their width; basis 0 and a
        0-floored row make them take the leftover height instead */
-    .visuals { flex: 1 1 0; min-height: 170px; grid-template-rows: minmax(0, 1fr); }
+    .visuals { flex: 1 1 0; min-height: 120px; grid-template-rows: minmax(0, 1fr); }
     .vis { display: flex; flex-direction: column; min-height: 0; }
     .vis-svg { flex: 1 1 0; height: auto; min-height: 0; }
+
+    /* the solution column is wide enough for the adjust inputs on one row */
+    .adj-grid { grid-template-columns: auto 1fr 1.15fr auto 1fr 1fr 0.8fr; }
+    #adjBrg { grid-column: auto; }
   }
 </style>
 </head>
@@ -843,16 +1084,57 @@
 
 <div class="app">
 
+  <!-- One file, three pages: the tool chooser (/), the L81 (/l81) and the
+       SPH-2 (/sph2). Opened as a file, #l81 / #sph2 pick the page instead. -->
+  <nav class="topnav" aria-label="Pages">
+    <a class="nav-brand nav-link" data-page="home" href="./">Wardogs Artillery</a>
+    <a class="nav-tab nav-link" data-page="l81" href="l81">L81 Mortar</a>
+    <a class="nav-tab nav-link" data-page="sph2" href="sph2">SPH-2</a>
+    <button type="button" class="nav-tab nav-support support-open">Support &hearts;</button>
+  </nav>
+
+  <!-- the tool chooser -->
+  <section class="home" id="homeView" hidden>
+    <a class="tool-card nav-link" data-page="l81" href="l81">
+      <span class="tool-k">Mortar</span>
+      <span class="tool-name">L81 Mortar</span>
+      <span class="tool-range">132&ndash;684 m</span>
+      <span class="tool-copy">Range, bearing and mils from map coordinates, then adjust each
+        round from where the last one landed.</span>
+      <span class="tool-go">Open the L81 calculator &rarr;</span>
+    </a>
+    <a class="tool-card nav-link" data-page="sph2" href="sph2">
+      <span class="tool-k">Self-propelled gun</span>
+      <span class="tool-name">SPH-2</span>
+      <span class="tool-range">low arc 1,181&ndash;2,629 m &middot; high arc 780&ndash;2,629 m</span>
+      <span class="tool-copy">Corrects for target height and a tilted gun platform, with a tilt
+        gauge that matches the one in game, then adjusts from where each round lands.</span>
+      <span class="tool-go">Open the SPH-2 calculator &rarr;</span>
+    </a>
+    <aside class="ad-slot" data-slot="home-1" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
+    <div class="home-support">
+      <p><b>Free to use, always.</b> Hosting isn't free, though &mdash; donations help cover
+        the server costs and keep the calculator online.</p>
+      <button type="button" class="support-open home-support-btn">Support &hearts;</button>
+    </div>
+    <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
+      <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
+    </a>
+  </section>
+
   <!-- desktop: three columns, one screen. Phones: display:contents flattens
        the columns and `order` restores the single-column reading order -->
   <section class="col col-in">
 
     <header>
-      <h1>Artillery &amp; Mortar Calculator</h1>
+      <h1 id="pageTitle">Artillery &amp; Mortar Calculator</h1>
       <p>A&sup2; + B&sup2; = C&sup2;</p>
     </header>
 
-    <div class="scale">
+    <div class="setting">
       <span>Targeting</span>
       <div class="seg" role="group" aria-label="Targeting mode">
         <button type="button" data-mode="simple" aria-pressed="false"
@@ -862,18 +1144,8 @@
       </div>
     </div>
 
-    <div class="scale">
-      <span>Grid scale</span>
-      <select id="scale">
-        <option value="100">1 coord unit = 100 m &nbsp;(Wardogs)</option>
-        <option value="10">1 coord unit = 10 m</option>
-        <option value="1">1 coord unit = 1 m &nbsp;(raw metres)</option>
-        <option value="1000">1 coord unit = 1000 m</option>
-      </select>
-    </div>
-
-    <div class="scale">
-      <span>Weapon</span>
+    <div class="setting" id="weaponRow">
+      <span id="weaponLabel">Weapon</span>
       <select id="weapon">
         <option value="mortar">L81 Mortar &mdash; 132&ndash;684 m</option>
         <option value="spgLow">SPH-2 low arc &mdash; 1181&ndash;2629 m</option>
@@ -924,12 +1196,16 @@
       <button id="clearAll">Clear all</button>
     </div>
 
+    <a class="lf-strip lf-link" href="https://lobbyforge.net/" data-utm="strip" target="_blank" rel="noopener" hidden>
+      <b>LobbyForge</b> &middot; the Discord LFG bot you design yourself <span>&rarr;</span>
+    </a>
+
     <div class="hint">
       <kbd>Enter</kbd> next field &middot; <kbd>Esc</kbd> new target &middot; click a readout to copy<br>
       <b>Bearing</b> &mdash; degrees clockwise from grid north (+Y)<br>
       <b>Azimuth</b> &mdash; barrel elevation in mils, the game's wording<br>
       <span class="adv-only"><b>ASL</b> &mdash; from the sight's readout, blank = 0; corrects the SPH-2<br></span>
-      Gun position, grid scale, weapon and mode are remembered.
+      Gun position, weapon and mode are remembered &middot; <a href="privacy.html">Privacy</a>
     </div>
 
   </section>
@@ -953,6 +1229,29 @@
           <div class="elev-note" id="elevNote"></div>
         </div>
         <div class="value"><span id="elev">&mdash;</span><span class="u">mil</span></div>
+      </div>
+    </div>
+
+    <div class="adj adv-only" id="adjPanel">
+      <div class="adj-head">
+        <span class="tag">Adjust from impact</span>
+        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
+      </div>
+      <div class="adj-grid">
+        <span class="adj-k">Fired</span>
+        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
+               title="Mil you fired at — filled from the solution until you change it">
+        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
+               title="Bearing you laid — filled from the solution until you change it">
+        <span class="adj-k">Landed</span>
+        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
+        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
+        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
+               title="Height where it landed — blank = the target's">
+      </div>
+      <div class="adj-out">
+        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
+        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
       </div>
     </div>
 
@@ -1070,28 +1369,17 @@
       </div>
     </div>
 
-    <div class="adj" id="adjPanel">
-      <div class="adj-head">
-        <span class="tag">Adjust from impact</span>
-        <button type="button" class="adj-btn" id="adjClear" title="Drop the adjustment and go back to the calculated solution">Clear</button>
-      </div>
-      <div class="adj-grid">
-        <span class="adj-k">Fired</span>
-        <input id="adjMil" type="number" step="any" placeholder="mil" inputmode="decimal" autocomplete="off"
-               title="Mil you fired at — filled from the solution until you change it">
-        <input id="adjBrg" type="number" step="any" placeholder="bearing" inputmode="decimal" autocomplete="off"
-               title="Bearing you laid — filled from the solution until you change it">
-        <span class="adj-k">Landed</span>
-        <input id="adjX" type="number" step="any" placeholder="X" inputmode="decimal" autocomplete="off">
-        <input id="adjY" type="number" step="any" placeholder="Y" inputmode="decimal" autocomplete="off">
-        <input id="adjAsl" type="number" step="any" placeholder="ASL" inputmode="decimal" autocomplete="off"
-               title="Height where it landed — blank = the target's">
-      </div>
-      <div class="adj-out">
-        <div class="adj-msg" id="adjMsg">Fire, then enter where the round landed.</div>
-        <button type="button" class="adj-btn" id="adjApply" disabled>Apply</button>
-      </div>
-    </div>
+    <!-- 300x250 ad spaces, filled from SITE_CONFIG: a paid sponsor, else
+         AdSense, else LobbyForge (once per page) or "Advertise here". The
+         second only shows on the L81 page, which has no tilt panel. -->
+    <aside class="ad-slot" data-slot="side-1" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
+    <aside class="ad-slot" data-slot="side-2" aria-label="Sponsored">
+      <span class="ad-label">Sponsored</span>
+      <div class="ad-fill"></div>
+    </aside>
 
     <div class="cb adv-only" id="cbPanel">
       <button class="cb-toggle" id="cbToggle" type="button" aria-expanded="false">
@@ -1133,6 +1421,38 @@
 
 <div class="toast" id="toast">Copied</div>
 
+<!-- what the ad spaces are filled with when nothing paid is booked -->
+<template id="tplLobbyForge">
+  <a class="lf-card lf-link" href="https://lobbyforge.net/" data-utm="house_ad" target="_blank" rel="noopener">
+    <img class="lf-logo" src="https://lobbyforge.net/lf_name_banner.png" alt="LobbyForge"
+         onerror="this.hidden = true; this.nextElementSibling.hidden = false;">
+    <span class="lf-brand" hidden>LobbyForge</span>
+    <span class="lf-head">The Discord LFG bot you design yourself.</span>
+    <span class="lf-copy">Design your lobby in the web dashboard and publish it live. Buttons,
+      not commands &mdash; every lobby gets a voice channel with a live roster.</span>
+    <span class="lf-cta">Free to start &middot; lobbyforge.net &rarr;</span>
+  </a>
+</template>
+<template id="tplAdvertise">
+  <a class="adv-card" href="#" target="_blank" rel="noopener">
+    <span class="adv-k">Ad space available</span>
+    <span class="adv-head">Advertise here</span>
+    <span class="adv-copy">Put your server, clan, stream or product in front of Wardogs
+      gunners while they line up their shots.</span>
+    <span class="adv-cta">Get in touch &rarr;</span>
+  </a>
+</template>
+
+<dialog class="support-dlg" id="supportDlg" aria-labelledby="supportTitle">
+  <h2 id="supportTitle">Support the calculator</h2>
+  <p>These tools are free to use, and they'll stay that way.</p>
+  <p>Hosting them isn't free, though. Donations go towards the server costs and help
+     keep the calculator online for everyone. Thank you!</p>
+  <a class="donate-btn" id="donateBtn" href="#" target="_blank" rel="noopener">Donate with PayPal</a>
+  <p class="donate-soon" id="donateSoon" hidden>Donations open here soon.</p>
+  <form method="dialog"><button class="dlg-close">Close</button></form>
+</dialog>
+
 <script>
 (function () {
   "use strict";
@@ -1144,8 +1464,10 @@
       gunAslEl = document.getElementById("gunAsl"),
       tgtAslEl = document.getElementById("tgtAsl");
 
-  var scaleEl     = document.getElementById("scale"),
-      weaponEl    = document.getElementById("weapon"),
+  // Wardogs map coordinates are in units of 100 m: 96.67 is 9,667 m
+  var GRID_M = 100;
+
+  var weaponEl    = document.getElementById("weapon"),
       elevEl      = document.getElementById("elev"),
       elevNoteEl  = document.getElementById("elevNote"),
       elevBoxEl   = document.getElementById("elevBox"),
@@ -1283,11 +1605,36 @@
     return d >= 359.95 ? 0 : d;
   }
 
+  // ---- pages ------------------------------------------------------------
+  //
+  // One file, three pages. On the server the last part of the address picks
+  // the page (…/l81, …/sph2, anything else is the tool chooser), so the site
+  // works at a domain's root or in a folder; opened as a file, the #hash
+  // does, and changing it reloads into the new page.
+  var IS_FILE = location.protocol === "file:",
+      PAGE = (function () {
+        var p = IS_FILE ? location.hash.slice(1)
+                        : location.pathname.replace(/\/+$/, "").split("/").pop();
+        p = p.replace(/\.html$/, "");
+        return p === "l81" || p === "sph2" ? p : "home";
+      })();
+  if (IS_FILE) window.addEventListener("hashchange", function () { location.reload(); });
+
+  // Gun position, weapon and mode belong to the page — a mortar pit and an
+  // SPH-2 are rarely parked in the same spot. Before there were pages
+  // everything was stored unprefixed, so that is the fallback the first time
+  // a page is used.
+  var PER_PAGE = { ax: 1, ay: 1, gunAsl: 1, weapon: 1, mode: 1 };
+
   function store(key, val) {
+    if (PER_PAGE[key]) key = PAGE + "." + key;
     try { localStorage.setItem(key, val); } catch (e) { /* file:// may block */ }
   }
   function load(key) {
-    try { return localStorage.getItem(key); } catch (e) { return null; }
+    try {
+      var v = PER_PAGE[key] ? localStorage.getItem(PAGE + "." + key) : null;
+      return v !== null ? v : localStorage.getItem(key);
+    } catch (e) { return null; }
   }
 
   // Simple: flat ground, straight from the firing table — the calculator as it
@@ -1443,7 +1790,7 @@
       ADJ_SPAN_DEG = 20, ADJ_SPAN_RANGE = 0.3;
 
   function gunKey() {
-    return [ax.value, ay.value, gunAslEl.value, scaleEl.value].join("|");
+    return [ax.value, ay.value, gunAslEl.value].join("|");
   }
 
   // the adjustment to use for a target at range r, bearing deg — or null
@@ -1703,9 +2050,8 @@
       return;
     }
 
-    // coords arrive in grid units; convert the deltas to metres.
-    // Wardogs reports 1 unit = 100 m, so 96.67 means 9,667 m.
-    var k = parseFloat(scaleEl.value) || 1;
+    // coords arrive in grid units; convert the deltas to metres
+    var k = GRID_M;
 
     // A = easting difference, B = northing difference (both in metres)
     var a = (x2 - x1) * k,
@@ -2049,7 +2395,7 @@
     var obs = [1, 2, 3].map(readObs).filter(Boolean),
         out = document.getElementById("cbOut"),
         use = document.getElementById("cbUse"),
-        k   = parseFloat(scaleEl.value) || 1;
+        k   = GRID_M;
 
     cbFix = null;
     use.disabled = true;
@@ -2152,7 +2498,7 @@
   // CSS px: the tallest column, worst case, is just under FIT_H. Scale it to
   // fill the window, capped so a 1440p screen isn't absurd and floored where
   // text would get too small to read — below that the page simply scrolls.
-  var FIT_W = 1250, FIT_H = 640,
+  var FIT_W = 1250, FIT_H = 690,
       deskMQ = window.matchMedia("(min-width: 1100px)");
 
   function fitToScreen() {
@@ -2166,6 +2512,172 @@
 
   // the desktop layout has room for it, so it starts open there
   if (CB_ENABLED && deskMQ.matches) setCbOpen(true);
+
+  // ---- the site: settings, pages, ad spaces, support ---------------------
+  //
+  // Everything a site owner changes lives in SITE_CONFIG.
+  //
+  // Each ad space fills in this order: a paid sponsor booked for that space,
+  // else AdSense (publisher ID plus that space's ad unit), else LobbyForge —
+  // once per page — and after that "Advertise here". The publisher ID on its
+  // own just loads the AdSense script so Google can verify the site.
+  // DEPLOY.md walks through all of it.
+  var SITE_CONFIG = {
+    // the Support button's PayPal link: a paypal.me link, or the link from
+    // a PayPal Donate button. Blank shows "Donations open here soon".
+    donateUrl: "https://paypal.me/cryptointelligence",
+
+    adsenseClient: "",                     // publisher ID, "ca-pub-0000000000000000"
+
+    // A booked sponsor for a space looks like
+    //   sponsor: { image: "https://…/ad-300x250.png", url: "https://…", alt: "Who it is" }
+    slots: {
+      "side-1": { adsenseSlot: "", sponsor: null },   // right column, both tool pages
+      "side-2": { adsenseSlot: "", sponsor: null },   // right column, L81 page only
+      "home-1": { adsenseSlot: "", sponsor: null }    // the tool chooser
+    },
+
+    // where "Advertise here" sends people
+    advertiseUrl:  "mailto:support@lobbyforge.net?subject=Advertising%20on%20the%20Wardogs%20calculator",
+    lobbyforgeUrl: "https://lobbyforge.net/",
+    utmSource:     "wardogs-artillery"     // how these visits show in LobbyForge's analytics
+  };
+
+  var PAGE_INFO = {
+    home: { title: "Wardogs Artillery & Mortar Calculator",
+            h1: "Artillery & Mortar Calculator" },
+    l81:  { title: "L81 Mortar Calculator — Wardogs",
+            h1: "L81 Mortar Calculator", weapons: ["mortar"] },
+    sph2: { title: "SPH-2 Artillery Calculator — Wardogs",
+            h1: "SPH-2 Calculator", weapons: ["spgLow", "spgHigh"] }
+  };
+
+  (function setUpPage() {
+    var info = PAGE_INFO[PAGE];
+    document.querySelector(".app").classList.add("page-" + PAGE);
+    document.getElementById("homeView").hidden = PAGE !== "home";
+    document.title = info.title;
+    document.getElementById("pageTitle").textContent = info.h1;
+
+    // tabs: real addresses on the server (relative, so a site in a folder
+    // stays in it), #hash when opened as a file
+    [].forEach.call(document.querySelectorAll(".nav-link"), function (a) {
+      var p = a.getAttribute("data-page"), path = p === "home" ? "" : p;
+      a.href = IS_FILE ? "#" + path : path || "./";
+      if (a.classList.contains("nav-tab") && p === PAGE) a.setAttribute("aria-current", "page");
+    });
+
+    // each tool page offers only its own weapon; on the SPH-2 page that is
+    // a choice of arc
+    var keep = info.weapons || PAGE_INFO.sph2.weapons;
+    [].slice.call(weaponEl.options).forEach(function (o) {
+      if (keep.indexOf(o.value) < 0) o.remove();
+    });
+    if (PAGE === "l81") {
+      document.getElementById("weaponRow").hidden = true;
+    } else {
+      document.getElementById("weaponLabel").textContent = "Arc";
+      weaponEl.options[0].textContent = "Low arc — 1181–2629 m";
+      weaponEl.options[1].textContent = "High arc — 780–2629 m";
+    }
+  })();
+
+  (function fillAdSpaces() {
+    var cfg = SITE_CONFIG, lfShown = false;
+
+    if (cfg.adsenseClient) {
+      // the script alone serves nothing (keep Auto ads off: they would push
+      // the layout off the screen); it is what AdSense checks for
+      var js = document.createElement("script");
+      js.async = true;
+      js.crossOrigin = "anonymous";
+      js.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" +
+               encodeURIComponent(cfg.adsenseClient);
+      document.head.appendChild(js);
+    }
+
+    [].forEach.call(document.querySelectorAll(".ad-slot"), function (slot) {
+      // only spaces this page shows: an ad must never be requested hidden
+      if (slot.offsetParent === null) return;
+
+      var sc    = cfg.slots[slot.getAttribute("data-slot")] || {},
+          fill  = slot.querySelector(".ad-fill"),
+          label = slot.querySelector(".ad-label"),
+          sp    = sc.sponsor;
+      fill.innerHTML = "";
+
+      if (sp && sp.image && sp.url) {                     // booked and paid for
+        var link = document.createElement("a"), img = document.createElement("img");
+        link.className = "sponsor-link";
+        link.href = sp.url;
+        link.target = "_blank";
+        link.rel = "sponsored noopener";
+        img.src = sp.image;
+        img.alt = sp.alt || "Sponsor";
+        img.width = 300;
+        img.height = 250;
+        link.appendChild(img);
+        fill.appendChild(link);
+        label.textContent = "Sponsored";
+      } else if (cfg.adsenseClient && sc.adsenseSlot) {   // AdSense
+        var ins = document.createElement("ins");
+        ins.className = "adsbygoogle ad-host";
+        ins.style.cssText = "display:inline-block;width:300px;height:250px";
+        ins.setAttribute("data-ad-client", cfg.adsenseClient);
+        ins.setAttribute("data-ad-slot", sc.adsenseSlot);
+        fill.appendChild(ins);
+        slot.classList.add("net");
+        label.textContent = "Advertisement";
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } else if (!lfShown) {                              // LobbyForge, once
+        fill.appendChild(document.getElementById("tplLobbyForge").content.cloneNode(true));
+        label.textContent = "Sponsored";
+        lfShown = true;
+      } else {                                            // for sale
+        fill.appendChild(document.getElementById("tplAdvertise").content.cloneNode(true));
+        fill.querySelector(".adv-card").href = cfg.advertiseUrl;
+        label.textContent = "Ad space";
+      }
+    });
+
+    // if every space is taken, LobbyForge keeps its one-line strip instead
+    if (!lfShown) {
+      [].forEach.call(document.querySelectorAll(".lf-strip"), function (st) {
+        if (!!st.closest(".home") === (PAGE === "home")) st.hidden = false;
+      });
+    }
+
+    [].forEach.call(document.querySelectorAll(".lf-link"), function (a) {
+      a.href = cfg.lobbyforgeUrl +
+        "?utm_source=" + encodeURIComponent(cfg.utmSource) +
+        "&utm_medium=calculator&utm_campaign=" + encodeURIComponent(a.getAttribute("data-utm") || "link");
+    });
+  })();
+
+  (function setUpSupport() {
+    var dlg = document.getElementById("supportDlg"),
+        btn = document.getElementById("donateBtn");
+
+    if (SITE_CONFIG.donateUrl) {
+      btn.href = SITE_CONFIG.donateUrl;
+    } else {
+      btn.hidden = true;
+      document.getElementById("donateSoon").hidden = false;
+    }
+
+    [].forEach.call(document.querySelectorAll(".support-open"), function (b) {
+      b.addEventListener("click", function () {
+        if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+      });
+    });
+
+    // a click out on the dimmed backdrop closes it as well as the button
+    dlg.addEventListener("click", function (e) {
+      var r = dlg.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)
+        dlg.close();
+    });
+  })();
 
   // ---- adjust from impact: the panel ------------------------------------
 
@@ -2187,7 +2699,7 @@
   // panel or the gun/target is incomplete.
   function adjRead() {
     var w  = WEAPONS[weaponEl.value] || WEAPONS.mortar,
-        k  = parseFloat(scaleEl.value) || 1,
+        k  = GRID_M,
         v  = [num(ax), num(ay), num(bx), num(by), num(adjMilEl), num(adjBrgEl), num(adjXEl), num(adjYEl)],
         i;
     for (i = 0; i < v.length; i++) if (v[i] === null) return null;
@@ -2341,11 +2853,6 @@
     copy(String(Math.round(lastRange)), " m");
   });
 
-  scaleEl.addEventListener("change", function () {
-    store("scale", scaleEl.value);
-    calc();
-  });
-
   document.getElementById("bearingBox").addEventListener("click", function () {
     if (lastDeg === null) return;
     copy(fmt(lastDeg, 1), "°");
@@ -2388,14 +2895,13 @@
     if (v) document.getElementById(k).value = v;
   });
 
-  // restore grid scale + weapon. A value with no matching option would blank
-  // the select and quietly fall back to raw metres, so only take known ones.
-  var savedScale = load("scale");
-  if (savedScale && [].some.call(scaleEl.options, function (o) { return o.value === savedScale; }))
-    scaleEl.value = savedScale;
+  // the grid scale used to be a setting; it is fixed now
+  try { localStorage.removeItem("scale"); } catch (e) { /* file:// may block */ }
 
+  // only a weapon this page still offers (the SPH-2 page has no mortar)
   var savedWeapon = load("weapon");
-  if (savedWeapon && WEAPONS[savedWeapon]) weaponEl.value = savedWeapon;
+  if (savedWeapon && [].some.call(weaponEl.options, function (o) { return o.value === savedWeapon; }))
+    weaponEl.value = savedWeapon;
 
   setMode(load("mode"));        // remembered like the weapon; Advanced if unset
 

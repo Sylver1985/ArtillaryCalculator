@@ -1,0 +1,34 @@
+# Fly.io app config. See DEPLOY.md.
+#
+# `app` must be unique across all of Fly.io: change it to a name of your own
+# before the first deploy (it also becomes the address, <app>.fly.dev).
+app = "wardogs-artillery"
+
+# Sydney. A static page loads fast from anywhere, so one region is plenty;
+# `fly platform regions` lists the others.
+primary_region = "syd"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+
+  # Stop the machine when nobody is using it and start it on the next visit
+  # (about a second's delay for that first visitor). Set min_machines_running
+  # to 1 to keep one always warm, for a little more a month.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

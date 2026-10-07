@@ -1,0 +1,31 @@
+# Redeploys to Fly.io whenever main changes (or on demand from the Actions
+# tab). It does nothing until a FLY_API_TOKEN repository secret exists —
+# DEPLOY.md, "Automatic deploys", has the two commands to set one up.
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: fly-deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - name: Skip until a Fly token is set
+        if: env.FLY_API_TOKEN == ''
+        run: echo "No FLY_API_TOKEN secret yet, so not deploying. See DEPLOY.md."
+
+      - uses: actions/checkout@v4
+        if: env.FLY_API_TOKEN != ''
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: env.FLY_API_TOKEN != ''
+
+      - name: Deploy
+        if: env.FLY_API_TOKEN != ''
+        run: flyctl deploy --remote-only
