@@ -8,11 +8,11 @@ need Docker on your own computer.
 
 | File | Purpose |
 |---|---|
-| `Artillery & Mortar Calculator.html` | The calculator. Served as the site's home page (`/`). |
+| `Artillery & Mortar Calculator.html` | The whole site in one file: the tool chooser at `/`, the L81 at `/l81` and the SPH-2 at `/sph2`. The page reads the address to decide which to show. |
 | `privacy.html` | Privacy page, linked from the calculator. AdSense requires one. |
 | `site/robots.txt` | Lets search engines index the site. |
 | `deploy/nginx.conf` | Web server config: port 8080, gzip, security headers, `/healthz`. |
-| `deploy/ads.txt.example` | Template for AdSense's `ads.txt` (see [Ads](#ads)). |
+| `deploy/ads.txt.example` | Template for AdSense's `ads.txt` (see [Setting up AdSense](#setting-up-adsense)). |
 | `Dockerfile` | Builds the nginx image. |
 | `fly.toml` | Fly.io app settings: name, region, health check, machine size. |
 | `.github/workflows/fly-deploy.yml` | Redeploys automatically when `main` changes. |
@@ -100,62 +100,118 @@ about a second. A static site this size costs very little; current prices are
 at <https://fly.io/docs/about/pricing/>. To keep it always warm, set
 `min_machines_running = 1` in `fly.toml` and redeploy.
 
-## Ads
+## Pages
 
-The calculator has one 300×250 ad space: the right-hand column on desktop, and
-after the results on phones. Its behaviour is set by `AD_CONFIG`, near the end
-of the script in `Artillery & Mortar Calculator.html`:
+| Address | Page |
+|---|---|
+| `/` | Tool chooser: the two calculators, an ad space and the support banner |
+| `/l81` | L81 mortar calculator (two ad spaces, as the mortar has no tilt panel) |
+| `/sph2` | SPH-2 calculator with the low/high arc choice (one ad space) |
+
+All three are the same file; nginx sends `/l81` and `/sph2` to it and the
+script shows the right page. Opened straight from disk, the tabs use `#l81` and
+`#sph2` instead. Each page remembers its own gun position, weapon and mode.
+
+## Site settings
+
+Everything you'd change is in `SITE_CONFIG`, near the end of the script in
+`Artillery & Mortar Calculator.html`:
 
 ```js
-var AD_CONFIG = {
-  adsenseClient: "",                       // publisher ID, "ca-pub-0000000000000000"
-  adsenseSlot:   "",                       // the ad unit's data-ad-slot number
+var SITE_CONFIG = {
+  donateUrl: "",                 // your PayPal link for the Support button
+  adsenseClient: "",             // AdSense publisher ID, "ca-pub-…"
+  slots: {
+    "side-1": { adsenseSlot: "", sponsor: null },   // right column, both tool pages
+    "side-2": { adsenseSlot: "", sponsor: null },   // right column, L81 page only
+    "home-1": { adsenseSlot: "", sponsor: null }    // the tool chooser
+  },
+  advertiseUrl:  "mailto:support@lobbyforge.net?subject=…",
   lobbyforgeUrl: "https://lobbyforge.net/",
   utmSource:     "wardogs-artillery"
 };
 ```
 
-- **Both empty** (as shipped): the space shows the LobbyForge ad.
-- **Publisher ID only:** loads the AdSense script so Google can verify the
-  site. The space still shows LobbyForge.
-- **Both filled:** the space shows AdSense, and LobbyForge moves to a one-line
-  strip in the left column. It's always on the page exactly once.
+Edit, commit, and deploy (or merge to `main` with automatic deploys on).
+
+## Donations
+
+The **Support ♥** tab, on every page, opens a short note saying the tools are
+free but hosting isn't, with a **Donate with PayPal** button. Until `donateUrl`
+is set it shows "Donations open here soon".
+
+To set it up, use either:
+- a **PayPal.Me** link, from <https://www.paypal.com/paypalme/>, such as
+  `https://paypal.me/YourName`; or
+- a **PayPal Donate button**: on PayPal, **Pay & get paid → Accept donations**
+  (or <https://www.paypal.com/donate/buttons>), create a button, and copy its
+  link, `https://www.paypal.com/donate/?hosted_button_id=…`.
+
+Put the link in `donateUrl`.
+
+## Ad spaces
+
+Every space is a standard 300×250. Each fills in this order:
+
+1. **A paid sponsor** booked for that space (see below).
+2. **AdSense**, if `adsenseClient` and that space's `adsenseSlot` are both set.
+3. **LobbyForge**, for the first unfilled space on the page. After that:
+   **"Advertise here"**, linking to `advertiseUrl`.
+
+LobbyForge always appears exactly once per page: when paid ads fill every space,
+it moves to a one-line strip.
+
+### Selling a space to a sponsor
+
+Ask for a **300×250 image** (PNG, JPG or GIF) and the link it should open. Host
+the image somewhere public: their site, or add it to `site/` and it will be
+served from your domain, e.g. `site/sponsors/acme.png` →
+`/sponsors/acme.png`. Then book the space:
+
+```js
+"side-1": { adsenseSlot: "", sponsor: { image: "/sponsors/acme.png", url: "https://acme.example/", alt: "Acme" } },
+```
+
+Sponsor links are marked `rel="sponsored"`, which Google requires for paid
+links. "Advertise here" sends people to `advertiseUrl`, which is your support
+email by default. Point it at a page or form if you have one.
 
 ### Setting up AdSense
 
 1. Deploy on **your own domain** first (above).
 2. Sign up at <https://adsense.google.com>, add the site, and put your
-   publisher ID (`ca-pub-…`) in `adsenseClient`. Deploy.
+   publisher ID (`ca-pub-…`) in `adsenseClient`. Deploy. On its own this only
+   loads the AdSense script so Google can verify the site; the spaces don't
+   change yet.
 3. **ads.txt:** copy `deploy/ads.txt.example` to `site/ads.txt`, replace the
    zeros with your publisher number (the `pub-…` part), and deploy. Check that
    `https://<your-domain>/ads.txt` shows it.
 4. Ask AdSense to review the site. Approval can take days to a few weeks.
-5. Once approved, create an ad unit: **Ads → By ad unit → Display ads**, size
-   **Fixed, 300 × 250**. Copy its `data-ad-slot` number into `adsenseSlot` and
-   deploy.
+5. Once approved, create a **Display ad** unit, size **Fixed, 300 × 250**, for
+   each space you want AdSense in, and put each unit's `data-ad-slot` number in
+   that space's `adsenseSlot`. One unit per space gives you per-space reports;
+   reusing one number everywhere also works. A booked sponsor still takes
+   priority over AdSense in its space.
 6. **Leave Auto ads off** for this site. Google would insert extra ads wherever
    it likes, pushing the one-screen layout off the screen.
 7. **Consent for European visitors:** in AdSense, **Privacy & messaging →
    European regulations**, create and publish a consent message. Google shows
    it for you; nothing to change in the page.
 8. Review `privacy.html` and adjust the wording or contact address if needed.
-   It's linked from the calculator's footer and from AdSense's checks.
 
-The ad is shown at its real 300×250 size regardless of the page's
-fit-to-screen scaling. Scaling ads would break ad-network rules.
+AdSense ads are shown at their real 300×250 size regardless of the page's
+fit-to-screen scaling, as ad-network rules require. A space a page doesn't show
+(the second one on the SPH-2 page) never requests an ad.
 
 ## LobbyForge
 
-- The ad links to `lobbyforge.net` with tracking tags,
+- The ad and strip link to `lobbyforge.net` with tracking tags,
   `?utm_source=wardogs-artillery&utm_medium=calculator&utm_campaign=house_ad`
   (or `strip`). Visits from the calculator show up under that source in
-  LobbyForge's analytics. Change `lobbyforgeUrl` or `utmSource` in `AD_CONFIG`
-  if needed.
-- The ad's text is in the page, in the `lf-card` link. It uses LobbyForge's own
-  lines ("The Discord LFG bot you design yourself.", "Buttons, not
-  commands.", "Free to start") and the logo from
-  `https://lobbyforge.net/lf_name_banner.png`. If the logo can't load, the name
-  shows as text.
+  LobbyForge's analytics.
+- The ad's wording is in the page's `tplLobbyForge` template. It uses
+  lobbyforge.net's own lines and its name-banner logo; if the logo can't load,
+  the name shows as text.
 
 ## Trying the server locally (optional)
 
