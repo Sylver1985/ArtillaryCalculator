@@ -21,6 +21,10 @@
 
   * { box-sizing: border-box; }
 
+  /* the hidden attribute is only a UA-stylesheet display:none, so any panel
+     with its own display (.lean is a grid) would otherwise ignore it */
+  [hidden] { display: none !important; }
+
   /* the fallback colour lives on html only: an opaque background on body
      would paint over the fixed z-index:-1 banner behind it */
   html { background: var(--bg); }
@@ -388,6 +392,7 @@
   }
   .working .k { color: var(--text); }
   .working .hl { color: var(--accent); }
+  .working .note { color: var(--amber); }
 
   /* ---------- gun lean (cant) ---------- */
 
@@ -954,7 +959,9 @@
   var ax = document.getElementById("ax"),
       ay = document.getElementById("ay"),
       bx = document.getElementById("bx"),
-      by = document.getElementById("by");
+      by = document.getElementById("by"),
+      gunAslEl = document.getElementById("gunAsl"),
+      tgtAslEl = document.getElementById("tgtAsl");
 
   var scaleEl     = document.getElementById("scale"),
       weaponEl    = document.getElementById("weapon"),
@@ -1007,23 +1014,32 @@
   // Community-measured firing tables from apollyon-sys/wardogs-calculator (MIT).
   // BULKHEAD publishes no official ballistics, so these are player measurements.
   // Each entry is [range in metres, barrel elevation in mils].
+  //
+  // milMin/milMax is the band each table covers; sight is how far the dial
+  // actually turns. They differ for the SPH-2: low and high arc are one gun on
+  // one sight, so a tilt-corrected low-arc shot may dial past 600 mil.
+  var SPH2_SIGHT = { min: 20, max: 1390 };
+
   var WEAPONS = {
     mortar: {
       name: "L81 Mortar",
       min: 132, max: 684,
       milMin: 150, milMax: 850,
+      sight: { min: 150, max: 850 },
       table: [[80,950],[87,940],[93,930],[99,920],[105,910],[110,900],[115,890],[118,880],[122,870],[127,860],[132,850],[140,840],[151,830],[163,820],[175,810],[187,800],[198,790],[208,780],[219,770],[229,760],[239,750],[250,740],[260,730],[270,720],[280,710],[290,700],[300,690],[310,680],[319,670],[329,660],[339,650],[348,640],[358,630],[367,620],[376,610],[385,600],[394,590],[403,580],[412,570],[420,560],[429,550],[437,540],[446,530],[454,520],[462,510],[470,500],[478,490],[486,480],[494,470],[501,460],[509,450],[516,440],[524,430],[531,420],[538,410],[545,400],[552,390],[559,380],[565,370],[572,360],[578,350],[585,340],[591,330],[597,320],[603,310],[609,300],[615,290],[620,280],[626,270],[631,260],[636,250],[641,240],[646,230],[651,220],[656,210],[661,200],[666,190],[670,180],[675,170],[680,160],[684,150],[688,140],[693,130],[697,120]]
     },
     spgLow: {
       name: "SPH-2 low arc",
       min: 1181, max: 2629,
       milMin: 20, milMax: 600,
+      sight: SPH2_SIGHT,
       table: [[1181,20],[1232,30],[1283,40],[1334,50],[1384,60],[1433,70],[1482,80],[1529,90],[1576,100],[1622,110],[1666,120],[1709,130],[1751,140],[1792,150],[1832,160],[1870,170],[1907,180],[1944,190],[1979,200],[2014,210],[2046,220],[2079,230],[2110,240],[2139,250],[2168,260],[2196,270],[2223,280],[2249,290],[2273,300],[2296,310],[2319,320],[2341,330],[2362,340],[2383,350],[2403,360],[2422,370],[2439,380],[2456,390],[2471,400],[2485,410],[2499,420],[2513,430],[2526,440],[2538,450],[2550,460],[2561,470],[2570,480],[2579,490],[2586,500],[2593,510],[2599,520],[2605,530],[2610,540],[2615,550],[2620,560],[2623,570],[2626,580],[2628,590],[2629,600]]
     },
     spgHigh: {
       name: "SPH-2 high arc",
       min: 780, max: 2629,
       milMin: 610, milMax: 1390,
+      sight: SPH2_SIGHT,
       table: [[2629,610],[2629,620],[2628,630],[2626,640],[2624,650],[2621,660],[2617,670],[2613,680],[2609,690],[2604,700],[2599,710],[2592,720],[2584,730],[2576,740],[2567,750],[2557,760],[2546,770],[2536,780],[2524,790],[2513,800],[2501,810],[2488,820],[2474,830],[2460,840],[2444,850],[2429,860],[2412,870],[2395,880],[2378,890],[2360,900],[2342,910],[2323,920],[2303,930],[2282,940],[2261,950],[2239,960],[2217,970],[2194,980],[2171,990],[2147,1000],[2123,1010],[2098,1020],[2072,1030],[2046,1040],[2019,1050],[1991,1060],[1963,1070],[1934,1080],[1905,1090],[1875,1100],[1844,1110],[1813,1120],[1782,1130],[1750,1140],[1717,1150],[1684,1160],[1650,1170],[1616,1180],[1582,1190],[1547,1200],[1512,1210],[1475,1220],[1438,1230],[1401,1240],[1363,1250],[1324,1260],[1285,1270],[1245,1280],[1205,1290],[1165,1300],[1124,1310],[1083,1320],[1041,1330],[999,1340],[956,1350],[913,1360],[869,1370],[825,1380],[780,1390],[735,1400]]
     }
   };
@@ -1043,6 +1059,12 @@
     return null;
   }
 
+  // low arc climbs with range; high arc and mortar come down as range grows
+  function milRisesWithRange(w) {
+    var t = w.table, a = t[0], z = t[t.length - 1];
+    return (z[0] - a[0]) * (z[1] - a[1]) > 0;
+  }
+
   var POINTS = ["N","NNE","NE","ENE","E","ESE","SE","SSE",
                 "S","SSW","SW","WSW","W","WNW","NW","NNW"];
 
@@ -1050,6 +1072,13 @@
   // where the target actually is on the map
   function compassPoint(deg) {
     return POINTS[Math.round(deg / 22.5) % 16];
+  }
+
+  // wrap into 0..360. A hair west of north is 0, not 360 — same bearing,
+  // conventional form, and it would otherwise print as "360.0"
+  function normBearing(d) {
+    d = ((d % 360) + 360) % 360;
+    return d >= 359.95 ? 0 : d;
   }
 
   function store(key, val) {
@@ -1116,6 +1145,11 @@
     var w = WEAPONS[weaponEl.value] || WEAPONS.mortar,
         envelope = w.name + " &middot; " + fmt(w.min, 0) + "&ndash;" + fmt(w.max, 0) + " m";
 
+    // the lean correction belongs to this solution only: every early return
+    // below must leave none behind for calc() to lay off the bearing with
+    cantAzOffset = 0;
+    leanFixEl.innerHTML = "";
+
     if (r === null) {
       lastElev = null;
       elevBoxEl.classList.remove("out");
@@ -1157,38 +1191,43 @@
         milSet = mil,
         leanMsg = "";
 
-    cantAzOffset = 0;
-
     if (tiltApplies() && (Math.abs(rollDeg) >= 0.05 || Math.abs(pitchDeg) >= 0.05)) {
-      if (eWant <= 0) {
+      var sinSet = Math.sin(eWant) / Math.cos(phi),
+          milTry = eWant <= 0 ? -Infinity
+                 : sinSet < 1 ? Math.asin(sinSet) / MIL_TO_DEG * 180 / Math.PI
+                 : Infinity,
+          dial   = Math.round(milTry);       // what the readout would show
+
+      // the dial only turns so far either way. Under its floor the slope is
+      // already lifting the barrel more than this range wants
+      if (dial < w.sight.min) {
         lastElev = null;
         elevBoxEl.classList.add("out");
         elevEl.textContent = "NOSE TOO HIGH";
-        elevNoteEl.innerHTML = envelope + " &mdash; the platform already points " +
-          "above the elevation this range needs. Level the platform.";
+        elevNoteEl.innerHTML = envelope + " &mdash; " +
+          (eWant <= 0 ? "the platform already points above the elevation this range needs"
+                      : "at this tilt the shot needs " + fmt(dial, 0) + " mil, below the " +
+                        fmt(w.sight.min, 0) + " mil sight limit") +
+          ". Level the platform.";
         drawElevation(null);
         visElevEl.textContent = "no solution at this tilt";
         leanFixEl.innerHTML = "no solution at this tilt";
         return;
       }
 
-      var sinSet = Math.sin(eWant) / Math.cos(phi),
-          milTry = sinSet < 1
-            ? Math.asin(sinSet) / MIL_TO_DEG * 180 / Math.PI
-            : Infinity;
-
-      // two separate ways this can fail: the barrel would need to pass
-      // vertical, or it simply runs out of sight before it gets there
-      if (sinSet >= 1 || milTry > w.milMax) {
-        // the tilt eats more elevation than the barrel has left
+      // over the top: the barrel would need to pass vertical, or it simply
+      // runs out of sight before it gets there
+      if (dial > w.sight.max) {
         lastElev = null;
         elevBoxEl.classList.add("out");
         elevEl.textContent = "TILT TOO STEEP";
         elevNoteEl.innerHTML = envelope + " &mdash; at this tilt the shot needs " +
           (sinSet >= 1 ? "more than the barrel can reach"
-                       : fmt(Math.round(milTry), 0) + " mil, past the " +
-                         fmt(w.milMax, 0) + " mil sight limit") +
-          ". Level the platform or move closer.";
+                       : fmt(dial, 0) + " mil, past the " +
+                         fmt(w.sight.max, 0) + " mil sight limit") +
+          // less elevation means closer on the low arc but further on the high
+          ". Level the platform or move " +
+          (milRisesWithRange(w) ? "closer" : "further back") + ".";
         drawElevation(null);
         visElevEl.textContent = "tilt too steep";
         leanFixEl.innerHTML = "no solution at this tilt";
@@ -1231,8 +1270,6 @@
     if (x1 === null || y1 === null || x2 === null || y2 === null) {
       lastRange = null;
       lastDeg = null;
-      cantAzOffset = 0;
-      leanFixEl.innerHTML = "";
       showElevation(null, null);
       rangeEl.textContent = "—";
       exactEl.textContent = "";
@@ -1259,10 +1296,7 @@
     exactEl.textContent = "exact " + fmt(c, 2) + " m";
 
     // bearing: clockwise from grid north (+Y)
-    var deg = Math.atan2(a, b) * 180 / Math.PI;
-    if (deg < 0) deg += 360;
-    // a hair west of north is 0, not 360 — same bearing, conventional form
-    if (deg >= 359.95) deg = 0;
+    var deg = normBearing(Math.atan2(a, b) * 180 / Math.PI);
 
     showElevation(c, deg);
 
@@ -1276,12 +1310,7 @@
     }
 
     // cant swings the muzzle toward the low side, so lay off the other way
-    var degAim = deg;
-    if (cantAzOffset) {
-      degAim = deg - cantAzOffset;
-      if (degAim < 0) degAim += 360;
-      if (degAim >= 360) degAim -= 360;
-    }
+    var degAim = cantAzOffset ? normBearing(deg - cantAzOffset) : deg;
 
     lastDeg = degAim;
 
@@ -1299,7 +1328,24 @@
       '<span class="k">B</span> = (' + fmtS(y2) + ' &minus; ' + fmtS(y1) + ')' + mul +
         ' = ' + fmtS(b) + ' m &nbsp;(north/south)<br>' +
       '<span class="k">C</span> = &radic;(' + fmtS(a * a) + ' + ' + fmtS(b * b) + ') = ' +
-      '<span class="hl">' + fmt(c, 2) + ' m</span>';
+      '<span class="hl">' + fmt(c, 2) + ' m</span>' + heightLine();
+  }
+
+  // Heights are reported, never folded into the solution: correcting for them
+  // needs muzzle velocity and drag, which the measured tables don't give us.
+  // Which WAY the round errs is safe to say, though — a descending shell meets
+  // higher ground before it has flown the full range, and lower ground after.
+  function heightLine() {
+    var h1 = num(gunAslEl), h2 = num(tgtAslEl);
+    if (h1 === null || h2 === null) return "";
+
+    var dh = h2 - h1;
+    return '<br><span class="k">H</span> = ' + fmtS(h2) + ' &minus; ' + fmtS(h1) +
+      ' = ' + (dh > 0 ? "+" : "") + fmtS(dh) + ' m &nbsp;' +
+      (dh === 0 ? "(level with the gun)"
+                : '(target ' + (dh > 0 ? "above" : "below") + ' gun)<br>' +
+                  '<span class="note">height is not corrected for &mdash; expect rounds to land ' +
+                  (dh > 0 ? "short" : "long") + '</span>');
   }
 
   // ---- wiring -----------------------------------------------------------
@@ -1316,17 +1362,33 @@
     // scrolling over a number input silently changes it — don't
     el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
 
+    keyNav(el, inputs[(i + 1) % inputs.length]);
+  });
+
+  function keyNav(el, next) {
     el.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
-        var next = inputs[(i + 1) % inputs.length];
         next.focus();
       } else if (e.key === "Escape") {
         e.preventDefault();
         newTarget();
       }
     });
+  }
+
+  // the heights sit outside the Enter cycle so the four coordinates stay a
+  // quick loop; from either one, Enter rejoins it at the next block
+  [gunAslEl, tgtAslEl].forEach(function (el) {
+    el.addEventListener("input", function () {
+      calc();
+      if (el === gunAslEl) store("gunAsl", el.value);
+    });
+    el.addEventListener("focus", function () { el.select(); });
+    el.addEventListener("wheel", function () { el.blur(); }, { passive: true });
   });
+  keyNav(gunAslEl, bx);
+  keyNav(tgtAslEl, ax);
 
   // ---- gun platform tilt: pitch AND roll --------------------------------
   //
@@ -1544,7 +1606,7 @@
         y = num(document.getElementById("o" + n + "y")),
         b = num(document.getElementById("o" + n + "b"));
     if (x === null || y === null || b === null) return null;
-    return { x: x, y: y, b: b };
+    return { n: n, x: x, y: y, b: b };
   }
 
   var cbFix = null;
@@ -1564,12 +1626,13 @@
       return;
     }
 
-    // every pair that actually crosses
-    var fixes = [], cuts = [], i, j, f;
+    // every pair that actually crosses, and the ones that don't
+    var fixes = [], cuts = [], misses = [], i, j, f;
     for (i = 0; i < obs.length; i++)
       for (j = i + 1; j < obs.length; j++) {
         f = rayIntersect(obs[i], obs[j]);
         if (f) { fixes.push(f); cuts.push(cutAngle(obs[i], obs[j])); }
+        else misses.push([obs[i].n, obs[j].n]);
       }
 
     if (!fixes.length) {
@@ -1597,7 +1660,17 @@
     var html = '<span class="cb-fix">' + fmtS(cx) + " , " + fmtS(cy) + "</span>" +
                ' &nbsp;<span style="font-size:11px">enemy gun</span><br>';
 
-    if (fixes.length > 1) {
+    // a pair that won't cross means a bad bearing, so the remaining fixes
+    // can't be said to "agree" however close they happen to land
+    if (misses.length === 2) {
+      // of three observers, the one in both failed pairs is the odd one out
+      var odd = misses[0].filter(function (n) { return misses[1].indexOf(n) >= 0; })[0];
+      html += "bearing " + odd + " never crosses the others &mdash; check it. " +
+              "Fix is from the other two alone<br>";
+    } else if (misses.length === 1) {
+      html += "bearings " + misses[0][0] + " and " + misses[0][1] +
+              " never cross &mdash; one of them is off<br>";
+    } else if (fixes.length > 1) {
       html += "three bearings agree to within <b>" + fmt(Math.round(spread), 0) + " m</b><br>";
     } else {
       html += "two bearings &mdash; no cross-check, add a third<br>";
@@ -1613,6 +1686,7 @@
     } else {
       html += " &mdash; good geometry.";
     }
+    if (misses.length && !out.classList.contains("bad")) out.classList.add("warn");
 
     out.innerHTML = html;
   }
@@ -1638,6 +1712,7 @@
     if (!cbFix) return;
     bx.value = fmtPlain(cbFix.x);
     by.value = fmtPlain(cbFix.y);
+    tgtAslEl.value = "";          // the old target's height says nothing about this one
     calc();
     toast("Target set to enemy gun");
   });
@@ -1657,6 +1732,7 @@
   function newTarget() {
     bx.value = "";
     by.value = "";
+    tgtAslEl.value = "";
     calc();
     bx.focus();
   }
@@ -1664,8 +1740,8 @@
   document.getElementById("newTarget").addEventListener("click", newTarget);
 
   document.getElementById("clearAll").addEventListener("click", function () {
-    inputs.forEach(function (el) { el.value = ""; });
-    store("ax", ""); store("ay", "");
+    inputs.concat(gunAslEl, tgtAslEl).forEach(function (el) { el.value = ""; });
+    store("ax", ""); store("ay", ""); store("gunAsl", "");
     calc();
     ax.focus();
   });
@@ -1708,14 +1784,16 @@
   });
 
   // restore gun position
-  ["ax", "ay"].forEach(function (k) {
+  ["ax", "ay", "gunAsl"].forEach(function (k) {
     var v = load(k);
     if (v) document.getElementById(k).value = v;
   });
 
-  // restore grid scale + weapon
+  // restore grid scale + weapon. A value with no matching option would blank
+  // the select and quietly fall back to raw metres, so only take known ones.
   var savedScale = load("scale");
-  if (savedScale) scaleEl.value = savedScale;
+  if (savedScale && [].some.call(scaleEl.options, function (o) { return o.value === savedScale; }))
+    scaleEl.value = savedScale;
 
   var savedWeapon = load("weapon");
   if (savedWeapon && WEAPONS[savedWeapon]) weaponEl.value = savedWeapon;
