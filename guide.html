@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How to Use FireGrid: Wardogs Mortar &amp; Artillery Guide (L81, SPH-2)</title>
-<meta name="description" content="Step-by-step Wardogs artillery guide: get L81 mortar and SPH-2 firing solutions from map coordinates, correct for height and gun tilt, and adjust fire from impacts.">
+<title>Wardogs Mortar Range Guide: L81 &amp; SPH-2 Artillery | FireGrid</title>
+<meta name="description" content="Wardogs mortar range guide and artillery how-to: convert map coordinates to bearing and mils for the L81 and SPH-2, with ASL calculation and tilt correction.">
 <link rel="canonical" href="https://wardogsfiregrid.com/guide">
 <meta property="og:site_name" content="Wardogs FireGrid">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://wardogsfiregrid.com/guide">
-<meta property="og:title" content="How to Use FireGrid: Wardogs Mortar &amp; Artillery Guide">
-<meta property="og:description" content="Get L81 mortar and SPH-2 artillery firing solutions from map coordinates, correct for height and tilt, and walk rounds onto target.">
+<meta property="og:title" content="Wardogs Mortar Range Guide: L81 &amp; SPH-2 Artillery">
+<meta property="og:description" content="Convert Wardogs map coordinates to bearing and mils for the L81 mortar and SPH-2, with ASL calculation, tilt correction and adjust from impact.">
 <meta property="og:image" content="https://wardogsfiregrid.com/img/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -25,12 +25,12 @@
   "@graph": [
     {
       "@type": "TechArticle",
-      "headline": "How to Use FireGrid: Wardogs Mortar & Artillery Guide",
-      "description": "How to get L81 mortar and SPH-2 artillery firing solutions in Wardogs from map coordinates, correct for height and gun tilt, and adjust fire from impacts.",
+      "headline": "Wardogs Mortar Range Guide: L81 & SPH-2 Artillery",
+      "description": "How to convert Wardogs map coordinates to bearing and mils for the L81 mortar and SPH-2 artillery, with ASL calculation, tilt correction and adjust from impact.",
       "url": "https://wardogsfiregrid.com/guide",
       "image": "https://wardogsfiregrid.com/img/og-image.jpg",
       "datePublished": "2026-10-07",
-      "dateModified": "2026-10-07",
+      "dateModified": "2026-10-08",
       "inLanguage": "en",
       "about": { "@type": "VideoGame", "name": "WARDOGS" },
       "author": { "@type": "Organization", "name": "Wardogs FireGrid", "url": "https://wardogsfiregrid.com/" },
@@ -50,6 +50,12 @@
           "acceptedAnswer": { "@type": "Answer", "text": "Usually imprecise coordinates or a target higher than the mortar. The L81's firing table has no height correction, so a higher target makes rounds fall short. Enter where the round landed in Adjust from impact to correct the next one." } },
         { "@type": "Question", "name": "Does FireGrid work on a phone?",
           "acceptedAnswer": { "@type": "Answer", "text": "Yes. On a phone the calculator stacks into one column, so you can run it beside the game." } },
+        { "@type": "Question", "name": "How do I convert Wardogs map coordinates to bearing?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Enter your gun's map coordinates and the target's. FireGrid takes the east-west and north-south distances between them, works out the range with Pythagoras, and gives the bearing clockwise from grid north along with the mils to set." } },
+        { "@type": "Question", "name": "How does Wardogs artillery tilt correction work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "When the SPH-2 leans, its elevation dial reads against the tilted hull, so the shell swings toward the low side and lands off range. Match the Gun platform panel to the in-game tilt indicator and FireGrid corrects the bearing and mils. It is SPH-2 only: the L81 sits on a baseplate." } },
+        { "@type": "Question", "name": "What does the ASL calculation do?",
+          "acceptedAnswer": { "@type": "Answer", "text": "It corrects the SPH-2 for a target higher or lower than your gun. Read ASL, your height above sea level, from the readout in your sight, enter your gun's and the target's, and FireGrid works the trajectory out to the target's height. The L81's table has no height correction, so for the mortar it tells you which way to expect the miss." } },
         { "@type": "Question", "name": "Is FireGrid official?",
           "acceptedAnswer": { "@type": "Answer", "text": "No. It is a fan-made tool and is not affiliated with or endorsed by BULKHEAD or Team17." } }
       ]
@@ -136,10 +142,10 @@
       <img src="img/firegrid-logo-320.webp" alt="Wardogs FireGrid badge" width="120" height="120">
       <div>
         <h1>How to use Wardogs FireGrid: mortar &amp; artillery guide</h1>
-        <p class="lead">FireGrid is a free Wardogs artillery and mortar calculator. Give it your
-          gun's map coordinates and the target's, and it gives you the firing solution: the
-          bearing to turn to and the mils to set, for the L81 mortar and the SPH-2
-          self-propelled howitzer.</p>
+        <p class="lead">FireGrid is a free Wardogs artillery tool: an artillery and mortar
+          calculator that turns map coordinates into a firing solution. Give it your gun's map
+          coordinates and the target's, and it gives you the bearing to turn to and the mils to
+          set, for the L81 mortar and the SPH-2 self-propelled howitzer.</p>
       </div>
     </header>
     <p>This guide covers every part of it, from your first fire mission to correcting
@@ -188,7 +194,7 @@
     </section>
 
     <section id="coordinates">
-      <h2>Reading coordinates from the Wardogs map</h2>
+      <h2>Reading Wardogs map coordinates</h2>
       <p>Wardogs map coordinates are in units of 100 metres: a coordinate of 96.67 is 9,667 m
         along that axis. Type the numbers exactly as the game shows them, decimals included,
         and FireGrid converts them to metres.</p>
@@ -201,6 +207,8 @@
 
     <section id="readout">
       <h2>Understanding the firing solution</h2>
+      <p>FireGrid is a Wardogs artillery mils calculator at heart: every solution is three
+        numbers, the range, the bearing to turn to, and the azimuth to set in mils.</p>
       <h3>Range</h3>
       <p>The straight-line distance from gun to target across the map, in metres, with the
         exact figure underneath.</p>
@@ -231,7 +239,8 @@
 
     <section id="sph2">
       <h2>The SPH-2 self-propelled howitzer</h2>
-      <p>The SPH-2 fires in two arcs; choose one with the <span class="ui">Arc</span> selector.</p>
+      <p>The SPH-2 fires in two arcs, so FireGrid works as an SPH-2 low arc calculator and an
+        SPH-2 high arc tool in one: choose the arc with the <span class="ui">Arc</span> selector.</p>
       <ul>
         <li><b>Low arc, 1,181&ndash;2,629 m:</b> a flatter trajectory and a shorter flight, for
           targets in the open.</li>
@@ -258,7 +267,7 @@
     </section>
 
     <section id="height">
-      <h2>Correcting for height (ASL)</h2>
+      <h2>Correcting for height: the ASL calculation</h2>
       <p>ASL is height above sea level, in metres. Take it from the ASL readout in your sight,
         and enter your gun's height and the target's in the two <span class="ui">ASL</span> boxes.
         A blank box counts as 0, so if you only know your own height, enter it and leave the
@@ -273,7 +282,7 @@
     </section>
 
     <section id="tilt">
-      <h2>Levelling the SPH-2 (gun-platform tilt)</h2>
+      <h2>SPH-2 tilt correction: levelling the gun platform</h2>
       <p>On uneven ground the SPH-2 leans, and a leaning gun throws its shells off line and off
         range. The <span class="ui">Gun platform</span> panel copies the in-game tilt indicator:
         a ladder of three notches either side of level, for <b>roll</b> (leaning left or right)
@@ -353,6 +362,21 @@
           <a href="https://github.com/apollyon-sys/wardogs-calculator" rel="noopener">apollyon-sys/wardogs-calculator</a>;
           BULKHEAD publishes no official ballistics. The SPH-2's height and tilt corrections come
           from a ballistic model fitted to those tables and checked against shots in game.</dd>
+        <dt>How do I convert Wardogs map coordinates to bearing?</dt>
+        <dd>Enter your gun's map coordinates and the target's. FireGrid takes the east&ndash;west
+          and north&ndash;south distances between them, works out the range with Pythagoras, and
+          gives the bearing clockwise from grid north along with the mils to set.</dd>
+        <dt>How does Wardogs artillery tilt correction work?</dt>
+        <dd>When the SPH-2 leans, its elevation dial reads against the tilted hull, so the shell
+          swings toward the low side and lands off range. Match the <b>Gun platform</b> panel to
+          the in-game tilt indicator and FireGrid corrects the bearing and mils. It's SPH-2
+          only: the L81 sits on a baseplate.</dd>
+        <dt>What does the ASL calculation do?</dt>
+        <dd>It corrects the SPH-2 for a target higher or lower than your gun. Read ASL, your
+          height above sea level, from the readout in your sight, enter your gun's and the
+          target's, and FireGrid works the trajectory out to the target's height. The L81's
+          table has no height correction, so for the mortar it tells you which way to expect
+          the miss.</dd>
         <dt>Is FireGrid official?</dt>
         <dd>No. It's a fan-made tool, not affiliated with or endorsed by BULKHEAD or Team17.</dd>
       </dl>

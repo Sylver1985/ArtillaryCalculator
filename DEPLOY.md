@@ -170,9 +170,11 @@ Roughly **US$3–5 a month at 50,000 visits a week**: about $2.20 for the
 machine and $1–3 for bandwidth. Traffic mostly affects the bandwidth part. Current
 prices: <https://fly.io/docs/about/pricing/>.
 
-- The machine **stops when nobody is using it** and starts on the next visit,
-  so that first visitor waits about a second. To keep it always on, set
-  `min_machines_running = 1` in `fly.toml` and deploy.
+- **One machine always runs** (`min_machines_running = 1` in `fly.toml`), so
+  nobody waits for a boot. Asleep, the site took about 4.5 s to answer the
+  first visitor, slow enough to trouble search engine crawlers. To save the
+  machine's running cost, set it to `0` and deploy: it then sleeps when idle
+  and the first visit after a quiet spell waits for it to start.
 - **Region:** `iad` (Ashburn, Virginia) is Fly's cheapest region and close to
   most US and European players. The page is one small download, so players
   further away barely notice. To move it, see "Moving to another region"

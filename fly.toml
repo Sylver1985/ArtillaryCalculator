@@ -16,12 +16,14 @@ primary_region = "iad"
   internal_port = 8080
   force_https = true
 
-  # Stop the machine when nobody is using it and start it on the next visit
-  # (about a second's delay for that first visitor). Set min_machines_running
-  # to 1 to keep one always warm, for a little more a month.
+  # One machine always stays running, so nobody waits for a boot, search
+  # engine crawlers included: from a cold stop the site took about 4.5 s to
+  # answer. The spare that `fly deploy` makes still stops when idle. Set
+  # min_machines_running to 0 to let the last machine sleep too, which saves
+  # its running cost but brings the boot delay back.
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
 
   # nginx serves a static page easily, so one machine takes all the normal
   # traffic; the spare that `fly deploy` makes only starts in a real rush
